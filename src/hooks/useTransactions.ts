@@ -49,7 +49,7 @@ export const useTransactions = (month?: string, year?: string) => {
  * Fetches category and unique description mappings for expense auto-selection
  */
 export const useCategoriesDescriptions = () => {
-  return useQuery<Record<string, string[]>>({
+  return useQuery<{ expenses: Record<string, string[]>; income: Record<string, string[]> }>({
     queryKey: ['categories-descriptions'],
     queryFn: async () => {
       const token = useAuthStore.getState().token;
@@ -62,7 +62,7 @@ export const useCategoriesDescriptions = () => {
         headers
       });
       if (!res.ok) {
-        throw new Error('Failed to fetch expense categories metadata');
+        throw new Error('Failed to fetch transaction categories metadata');
       }
       return res.json();
     },

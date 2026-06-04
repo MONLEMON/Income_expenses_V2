@@ -89,6 +89,8 @@ export async function GET(request: Request) {
         date: orders.orderDate,
         amount: orders.totalAmount,
         paymentMethod: orders.paymentMethod,
+        category: orders.category,
+        description: orders.description,
       })
       .from(orders);
 
@@ -126,9 +128,9 @@ export async function GET(request: Request) {
           id: `income-${o.id}`,
           date: dateStr,
           timestamp: oDate.getTime(),
-          item: o.paymentMethod ? `POS Order (${o.paymentMethod})` : "Sales Revenue",
+          item: o.description || (o.paymentMethod ? `POS Order (${o.paymentMethod})` : "Sales Revenue"),
           type: "Income",
-          category: "order",
+          category: o.category || "order",
           amount: parseFloat(o.amount) || 0,
         };
       }),
@@ -212,6 +214,8 @@ export async function POST(request: Request) {
         orderDate: new Date(date),
         totalAmount: amount.toString(),
         paymentMethod: "Cash",
+        category,
+        description: item,
       });
     } else {
       await db.insert(expenses).values({

@@ -45,6 +45,8 @@ export const orders = lbvSchema.table("orders", {
   orderDate: timestamp("order_date").defaultNow().notNull(),
   totalAmount: numeric("total_amount").notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }),
+  category: varchar("category", { length: 255 }).default("order"),
+  description: text("description"),
 });
 
 // 4. ตาราง รายการในคำสั่งซื้อ (Order Items)

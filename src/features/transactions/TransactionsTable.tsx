@@ -57,15 +57,15 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions }) =
       dataIndex: 'category',
       key: 'category',
       render: (_, record) => {
-        const isOrder = record.category === 'order';
-        const displayCat = isOrder 
+        const isIncome = record.type === 'Income';
+        const displayCat = record.category === 'order'
           ? (language === 'en' ? 'Order' : 'รายรับ (ออร์เดอร์)')
           : (t[record.category as keyof typeof t] || record.category);
 
         return (
           <Tag 
             className={`px-3 py-1 font-bold text-xs uppercase tracking-wider rounded-lg border-none ${
-              isOrder 
+              isIncome 
                 ? 'bg-emerald-50 text-emerald-700' 
                 : 'bg-slate-50 text-slate-700'
             }`}

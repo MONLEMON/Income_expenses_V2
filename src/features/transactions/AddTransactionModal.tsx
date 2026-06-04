@@ -25,24 +25,31 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
   const [category, setCategory] = useState('Food & Dining');
   const [isCustomCategoryMode, setIsCustomCategoryMode] = useState(false);
 
-  // Load category and description metadata from Postgres expenses
-  const { data: categoriesMap = {} } = useCategoriesDescriptions();
+  // Load category and description metadata from Postgres
+  const { data: metaMap = { expenses: {}, income: {} } } = useCategoriesDescriptions();
+
+  // Check type is income
+  const isIncome = type === 'income';
+
+  // Get current active categories mapping depending on type
+  const activeMap = isIncome ? (metaMap.income || {}) : (metaMap.expenses || {});
 
   // Set categories lists
-  const dbExpenseCategories = Object.keys(categoriesMap);
-  const expenseCategories = dbExpenseCategories.length > 0 
-    ? dbExpenseCategories 
+  const expenseCategories = Object.keys(metaMap.expenses || {}).length > 0 
+    ? Object.keys(metaMap.expenses || {}) 
     : ['Food & Dining', 'Shopping', 'Transportation', 'Entertainment', 'Bills & Utilities', 'Other Expenses'];
 
-  const incomeCategories = ['Order','Salary', 'Investment', 'Other Income'].map(cat => cat.toLowerCase());
+  const incomeCategories = Object.keys(metaMap.income || {}).length > 0 
+    ? Object.keys(metaMap.income || {}) 
+    : ['order', 'salary', 'investment', 'other income'];
 
   // Description / Item selection states
-  const descriptionsList = categoriesMap[category] || [];
+  const descriptionsList = activeMap[category] || [];
   const [isCustomMode, setIsCustomMode] = useState(true);
 
   // Sync descriptions dropdown when category changes
   useEffect(() => {
-    const list = categoriesMap[category] || [];
+    const list = activeMap[category] || [];
     if (list.length > 0) {
       form.setFieldValue('item', list[0]);
       setIsCustomMode(false);
@@ -50,13 +57,15 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
       form.setFieldValue('item', '');
       setIsCustomMode(true);
     }
-  }, [category, categoriesMap, form]);
+  }, [category, activeMap, form]);
 
   // Sync default category and form values when type or modal opens changes
   useEffect(() => {
     if (isOpen) {
       setIsCustomCategoryMode(false);
-      const defaultCat = type === 'income' ? 'order' : (expenseCategories[0] || 'Food & Dining');
+      const defaultCat = isIncome 
+        ? (incomeCategories[0] || 'order') 
+        : (expenseCategories[0] || 'Food & Dining');
       setCategory(defaultCat);
       
       form.setFieldsValue({
@@ -67,7 +76,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         item: ''
       });
       
-      const list = categoriesMap[defaultCat] || [];
+      const list = activeMap[defaultCat] || [];
       if (list.length > 0) {
         form.setFieldValue('item', list[0]);
         setIsCustomMode(false);
@@ -75,7 +84,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         setIsCustomMode(true);
       }
     }
-  }, [isOpen, type, form, categoriesMap]);
+  }, [isOpen, type, form, metaMap]);
 
   const handleSubmit = (values: any) => {
     const amountVal = values.amount;
@@ -98,7 +107,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
   };
 
   // --- Dynamic Color Shifting tokens ---
-  const isIncome = type === 'income';
   const localTheme = {
     token: {
       colorPrimary: isIncome ? '#10b981' : '#f43f5e', // Emerald green vs Rose red
@@ -195,10 +203,10 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                       label: cat === 'order' ? (language === 'en' ? 'Order' : 'รายรับ (ออร์เดอร์)') : (t[cat as keyof typeof t] || cat),
                       value: cat
                     })),
-                    ...(!isIncome ? [{
+                    {
                       label: language === 'en' ? '+ Add custom category...' : '+ เพิ่มหมวดหมู่ใหม่...',
                       value: '__custom_category__'
-                    }] : [])
+                    }
                   ]}
                   style={{ height: '46px' }}
                 />
@@ -219,7 +227,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                     type="button"
                     onClick={() => {
                       setIsCustomCategoryMode(false);
-                      const defaultCat = isIncome ? 'order' : (expenseCategories[0] || 'Food & Dining');
+                      const defaultCat = isIncome 
+                        ? (incomeCategories[0] || 'order') 
+                        : (expenseCategories[0] || 'Food & Dining');
                       setCategory(defaultCat);
                       form.setFieldValue('category', defaultCat);
                     }}
@@ -243,6 +253,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                 format="DD/MM/YYYY"
                 placeholder={t.datePickerPlaceholder}
                 style={{ height: '46px' }}
+                inputReadOnly={true}
               />
             </Form.Item>
           </div>
@@ -253,65 +264,51 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
             label={<span className="font-extrabold !text-slate-700 uppercase tracking-wider text-[11px]">{t.formDescription}</span>}
             rules={[{ required: !isIncome, message: language === 'en' ? 'Description is required' : 'กรุณากรอกรายละเอียดรายการนี้' }]}
           >
-            {type === 'expense' ? (
-              !isCustomMode && descriptionsList.length > 0 ? (
-                <Select
-                  size="large"
-                  className="font-bold !text-slate-900"
-                  onChange={(val) => {
-                    if (val === '__custom__') {
-                      setIsCustomMode(true);
-                      form.setFieldValue('item', '');
-                    }
-                  }}
-                  options={[
-                    ...descriptionsList.map(desc => ({ label: desc, value: desc })),
-                    { 
-                      label: language === 'en' ? '+ Type a custom description...' : '+ พิมพ์คำอธิบายด้วยตัวเอง...', 
-                      value: '__custom__' 
-                    }
-                  ]}
-                  style={{ height: '46px' }}
-                />
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    size="large"
-                    placeholder={
-                      language === 'en' 
-                        ? "e.g. Starbucks Coffee, Office Rent" 
-                        : "เช่น ค่ากาแฟสตาร์บัคส์, ค่าเช่าร้าน"
-                    }
-                    className="font-bold !text-slate-900"
-                    style={{ height: '46px' }}
-                  />
-                  {descriptionsList.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsCustomMode(false);
-                        form.setFieldValue('item', descriptionsList[0]);
-                      }}
-                      className="text-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 rounded-xl border border-emerald-100 shrink-0 transition-colors cursor-pointer"
-                      style={{ height: '46px' }}
-                    >
-                      {language === 'en' ? 'Select Existing' : 'เลือกประวัติเดิม'}
-                    </button>
-                  )}
-                </div>
-              )
-            ) : (
-              // Optional description for Income
-              <Input
+            {!isCustomMode && descriptionsList.length > 0 ? (
+              <Select
                 size="large"
-                placeholder={
-                  language === 'en' 
-                    ? "e.g. POS Sales Deposit (Optional)" 
-                    : "เช่น รายได้การขายหน้าร้าน (ระบุหรือไม่ก็ได้)"
-                }
                 className="font-bold !text-slate-900"
+                onChange={(val) => {
+                  if (val === '__custom__') {
+                    setIsCustomMode(true);
+                    form.setFieldValue('item', '');
+                  }
+                }}
+                options={[
+                  ...descriptionsList.map(desc => ({ label: desc, value: desc })),
+                  { 
+                    label: language === 'en' ? '+ Type a custom description...' : '+ พิมพ์คำอธิบายด้วยตัวเอง...', 
+                    value: '__custom__' 
+                  }
+                ]}
                 style={{ height: '46px' }}
               />
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  size="large"
+                  placeholder={
+                    isIncome
+                      ? (language === 'en' ? "e.g. POS Sales Deposit (Optional)" : "เช่น รายได้การขายหน้าน้าน (ระบุหรือไม่ก็ได้)")
+                      : (language === 'en' ? "e.g. Starbucks Coffee, Office Rent" : "เช่น ค่ากาแฟสตาร์บัคส์, ค่าเช่าร้าน")
+                  }
+                  className="font-bold !text-slate-900"
+                  style={{ height: '46px' }}
+                />
+                {descriptionsList.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomMode(false);
+                      form.setFieldValue('item', descriptionsList[0]);
+                    }}
+                    className="text-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 rounded-xl border border-emerald-100 shrink-0 transition-colors cursor-pointer"
+                    style={{ height: '46px' }}
+                  >
+                    {language === 'en' ? 'Select Existing' : 'เลือกประวัติเดิม'}
+                  </button>
+                )}
+              </div>
             )}
           </Form.Item>
 

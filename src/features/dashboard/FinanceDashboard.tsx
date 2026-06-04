@@ -240,7 +240,7 @@ const FinanceDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-          <Spin size="large" tip="Loading Live Database Dashboard..." />
+          <Spin size="large" description="Loading Live Database Dashboard..." />
         </div>
       </div>
     );
