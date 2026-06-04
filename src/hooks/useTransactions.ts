@@ -112,3 +112,83 @@ export const useAddTransaction = () => {
     },
   });
 };
+
+/**
+ * useUpdateTransaction Mutation Hook
+ * Sends updated transaction details to the backend
+ */
+export const useUpdateTransaction = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (updatedTx: {
+      id: string;
+      item: string;
+      type: 'income' | 'expense';
+      category: string;
+      amount: number;
+      date: string;
+    }) => {
+      const token = useAuthStore.getState().token;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch('/api/transactions', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(updatedTx),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to update transaction');
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['monthly-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-descriptions'] });
+    },
+  });
+};
+
+/**
+ * useDeleteTransaction Mutation Hook
+ * Deletes the specified transaction by ID
+ */
+export const useDeleteTransaction = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      const token = useAuthStore.getState().token;
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`/api/transactions?id=${transactionId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to delete transaction');
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['monthly-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-descriptions'] });
+    },
+  });
+};

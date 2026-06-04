@@ -81,7 +81,7 @@ const AuthPage: React.FC = () => {
   return (
     <ConfigProvider theme={appTheme}>
       <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
-        
+
         {/* Modern background blur shapes for ambient lighting effect */}
         <div className="absolute w-[400px] h-[400px] rounded-full bg-emerald-300/30 blur-[100px] -top-20 -left-20 animate-pulse duration-5000"></div>
         <div className="absolute w-[350px] h-[350px] rounded-full bg-emerald-500/10 blur-[80px] -bottom-20 -right-20 animate-pulse duration-7000"></div>
@@ -126,8 +126,8 @@ const AuthPage: React.FC = () => {
                   label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">Full Name</span>}
                   rules={[{ required: true, message: 'Please enter your name' }]}
                 >
-                  <Input 
-                    placeholder={language === 'en' ? 'e.g. John Doe' : 'เช่น สมชาย ตั้งใจ'} 
+                  <Input
+                    placeholder={language === 'en' ? 'e.g. John Doe' : 'เช่น สมชาย ตั้งใจ'}
                     size="large"
                     className="font-bold text-slate-800 rounded-xl"
                   />
@@ -139,9 +139,9 @@ const AuthPage: React.FC = () => {
                 label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">Username</span>}
                 rules={[{ required: true, message: 'Username is required' }]}
               >
-                <Input 
+                <Input
                   prefix={<UserOutlined className="text-slate-400" />}
-                  placeholder={language === 'en' ? 'Enter username' : 'กรอกชื่อผู้ใช้'} 
+                  placeholder={language === 'en' ? 'Enter username' : 'กรอกชื่อผู้ใช้'}
                   size="large"
                   className="font-bold text-slate-800 rounded-xl"
                 />
@@ -152,9 +152,9 @@ const AuthPage: React.FC = () => {
                 label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">Password</span>}
                 rules={[{ required: true, message: 'Password is required' }]}
               >
-                <Input.Password 
+                <Input.Password
                   prefix={<LockOutlined className="text-slate-400" />}
-                  placeholder={language === 'en' ? 'Enter password' : 'กรอกรหัสผ่าน'} 
+                  placeholder={language === 'en' ? 'Enter password' : 'กรอกรหัสผ่าน'}
                   size="large"
                   className="font-bold text-slate-800 rounded-xl"
                 />
@@ -191,7 +191,7 @@ const AuthPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Bilingual seeding information block */}
+          {/* Bilingual seeding information block
           <div className="mt-6 bg-emerald-50/50 border border-emerald-100/60 p-4 rounded-2xl flex gap-3 items-start animate-fadeIn">
             <InfoCircleOutlined className="text-emerald-700 text-base mt-0.5 shrink-0" />
             <div className="text-[11px] leading-relaxed text-emerald-800 font-semibold font-sans">
@@ -205,7 +205,7 @@ const AuthPage: React.FC = () => {
                 </p>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </ConfigProvider>

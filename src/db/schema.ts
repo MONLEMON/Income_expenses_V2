@@ -69,3 +69,25 @@ export const expenses = lbvSchema.table("expenses", {
   quantity: numeric("quantity"),
   unit: varchar("unit", { length: 50 }),
 });
+
+// 6. ตาราง งบประมาณ (Budgets)
+export const budgets = lbvSchema.table("budgets", {
+  budgetId: serial("budget_id").primaryKey(),
+  userId: integer("user_id").references(() => users.userId),
+  category: varchar("category", { length: 255 }).notNull(),
+  amount: numeric("amount").notNull(),
+  period: varchar("period", { length: 50 }).default("monthly").notNull(),
+  month: varchar("month", { length: 2 }).notNull(),
+  year: varchar("year", { length: 4 }).notNull(),
+});
+
+// 7. ตาราง เป้าหมายการออมเงิน (Savings Goals)
+export const savingsGoals = lbvSchema.table("savings_goals", {
+  goalId: serial("goal_id").primaryKey(),
+  userId: integer("user_id").references(() => users.userId),
+  name: varchar("name", { length: 255 }).notNull(),
+  targetAmount: numeric("target_amount").notNull(),
+  currentAmount: numeric("current_amount").default("0"),
+  targetDate: date("target_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});

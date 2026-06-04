@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Language Selection Button */}
         <button 
           onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
-          className="px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm font-extrabold text-xs cursor-pointer select-none"
+          className="px-3.5 py-2.5 bg-white border border-slate-200/80 rounded-xl text-slate-700 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow font-black text-xs cursor-pointer select-none"
           title={language === 'en' ? 'Switch to Thai' : 'เปลี่ยนเป็นภาษาอังกฤษ'}
         >
           <span className="text-sm leading-none">{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* New Transaction Button */}
         <button 
           onClick={onAddTransaction}
-          className="bg-emerald-100 text-black border border-emerald-200/60 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-200 hover:shadow-emerald-100/30 transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+          className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-sm shadow-md shadow-emerald-100/50 hover:shadow-lg hover:shadow-emerald-200/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer border-none"
         >
           <Plus size={18} />
           <span className="hidden sm:inline">{t.newTransaction}</span>
@@ -108,36 +108,36 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Search Bar */}
         <div className="relative group hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-600 transition-colors" size={18} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={16} />
           <input 
             type="text" 
             placeholder={t.searchItems} 
-            className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-48 lg:w-64 shadow-sm transition-all outline-none"
+            className="pl-10 pr-4 py-2.5 bg-white border border-slate-200/80 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-48 lg:w-64 shadow-sm hover:border-slate-300 transition-all outline-none text-slate-800 font-medium"
           />
         </div>
 
         {/* Notification Bell */}
-        <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all relative shadow-sm">
+        <button className="p-2.5 bg-white border border-slate-200/80 rounded-xl text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all duration-200 relative shadow-sm hover:shadow cursor-pointer">
           <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
         </button>
 
         {/* User Profile with Action Dropdown */}
         <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
           <div className="flex items-center space-x-3 pl-2 md:pl-4 md:border-l border-gray-200 cursor-pointer group select-none">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow-md transition-all">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow-md group-hover:border-emerald-500 transition-all">
               <img 
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || 'POS User')}&background=059669&color=fff&bold=true`} 
                 alt="User" 
               />
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-sm font-semibold text-gray-700 group-hover:text-emerald-600 transition-colors leading-tight">
+              <p className="text-sm font-semibold text-slate-700 group-hover:text-emerald-600 transition-colors leading-tight">
                 {user?.fullName || 'POS User'}
               </p>
-              <p className="text-[11px] text-gray-500 font-medium">{t.premiumUser}</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{t.premiumUser}</p>
             </div>
-            <ChevronDown size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors hidden md:block ml-2" />
+            <ChevronDown size={14} className="text-slate-400 group-hover:text-emerald-600 transition-colors hidden md:block ml-1" />
           </div>
         </Dropdown>
       </div>

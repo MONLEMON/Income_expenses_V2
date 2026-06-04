@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { orders, expenses } from "@/db/schema";
+import { orders, expenses, orderItems } from "@/db/schema";
 import { desc, sql, and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { verifyAuth } from "../auth-helper";
@@ -230,6 +230,119 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, message: "Transaction added successfully" }, { status: 201 });
   } catch (error) {
     console.error("Error creating transaction:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    // 1. Authorize session
+    const decodedUser = verifyAuth(request);
+    if (!decodedUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = decodedUser.userId;
+
+    // 2. Parse body
+    const json = await request.json();
+    const updateSchema = z.object({
+      id: z.string().min(1),
+      item: z.string().min(1, "Description is required"),
+      category: z.string().min(1, "Category is required"),
+      amount: z.number().positive("Amount must be greater than 0"),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    });
+
+    const result = updateSchema.safeParse(json);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+    }
+
+    const { id, item, category, amount, date } = result.data;
+    const parts = id.split("-");
+    if (parts.length !== 2) {
+      return NextResponse.json({ error: "Invalid transaction ID format" }, { status: 400 });
+    }
+
+    const [txType, dbIdStr] = parts;
+    const dbId = parseInt(dbIdStr);
+    if (isNaN(dbId)) {
+      return NextResponse.json({ error: "Invalid database ID" }, { status: 400 });
+    }
+
+    if (txType === "income") {
+      // Update in orders
+      await db.update(orders)
+        .set({
+          totalAmount: amount.toString(),
+          category,
+          description: item,
+          orderDate: new Date(date),
+        })
+        .where(and(eq(orders.orderId, dbId), eq(orders.userId, userId)));
+    } else if (txType === "expense") {
+      // Update in expenses
+      await db.update(expenses)
+        .set({
+          amount: amount.toString(),
+          category,
+          description: item,
+          expenseDate: date,
+        })
+        .where(and(eq(expenses.expenseId, dbId), eq(expenses.userId, userId)));
+    } else {
+      return NextResponse.json({ error: "Unknown transaction type" }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, message: "Transaction updated successfully" });
+  } catch (error) {
+    console.error("Error updating transaction:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    // 1. Authorize session
+    const decodedUser = verifyAuth(request);
+    if (!decodedUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = decodedUser.userId;
+
+    // 2. Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Transaction ID is required" }, { status: 400 });
+    }
+
+    const parts = id.split("-");
+    if (parts.length !== 2) {
+      return NextResponse.json({ error: "Invalid transaction ID format" }, { status: 400 });
+    }
+
+    const [txType, dbIdStr] = parts;
+    const dbId = parseInt(dbIdStr);
+    if (isNaN(dbId)) {
+      return NextResponse.json({ error: "Invalid database ID" }, { status: 400 });
+    }
+
+    if (txType === "income") {
+      // First delete dependent order items to satisfy foreign keys
+      await db.delete(orderItems).where(eq(orderItems.orderId, dbId));
+      // Then delete the order
+      await db.delete(orders).where(and(eq(orders.orderId, dbId), eq(orders.userId, userId)));
+    } else if (txType === "expense") {
+      // Delete the expense
+      await db.delete(expenses).where(and(eq(expenses.expenseId, dbId), eq(expenses.userId, userId)));
+    } else {
+      return NextResponse.json({ error: "Unknown transaction type" }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, message: "Transaction deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting transaction:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

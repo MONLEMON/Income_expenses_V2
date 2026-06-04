@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, FolderOpen, LogOut } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, LogOut, Target } from 'lucide-react';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
 interface SidebarProps {
-  currentView?: 'dashboard' | 'summary';
-  onViewChange?: (view: 'dashboard' | 'summary') => void;
+  currentView?: 'dashboard' | 'summary' | 'planning';
+  onViewChange?: (view: 'dashboard' | 'summary' | 'planning') => void;
 }
 
 const SidebarIcon = ({ 
@@ -66,6 +66,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChan
           active={currentView === 'summary'} 
           onClick={() => onViewChange?.('summary')}
           tooltip={t.expenseSummary}
+        />
+        <SidebarIcon 
+          icon={<Target size={22} />} 
+          active={currentView === 'planning'} 
+          onClick={() => onViewChange?.('planning')}
+          tooltip={language === 'en' ? 'Budgets & Goals' : 'งบประมาณและเป้าหมาย'}
         />
       </nav>
       

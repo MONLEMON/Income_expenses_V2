@@ -21,6 +21,7 @@ import IncomeExpenseChart from './IncomeExpenseChart';
 import CategoryExpenseChart from './CashFlowChart'; // Donut Chart
 import TransactionsTable from '../transactions/TransactionsTable';
 import CategorySummaryView from './CategorySummaryView'; // Monthly summary view
+import BudgetGoalsView from './BudgetGoalsView'; // Planning budgets and goals
 
 // Hooks
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
@@ -52,7 +53,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FinanceDashboard: React.FC = () => {
   const { language, t } = useTranslation();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'summary'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'summary' | 'planning'>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Dynamic Month & Year Filters (Defaults to Current Month - May "05" and Year "2026")
@@ -276,8 +277,20 @@ const FinanceDashboard: React.FC = () => {
       <main className="p-0 md:p-4 max-w-[1600px] mx-auto">
         <Header 
           onAddTransaction={() => setIsModalOpen(true)} 
-          title={currentView === 'dashboard' ? t.dashboard : t.expenseSummary}
-          subTitle={currentView === 'dashboard' ? t.welcomeTitle : t.welcomeSubtitle}
+          title={
+            currentView === 'dashboard' 
+              ? t.dashboard 
+              : currentView === 'summary' 
+                ? t.expenseSummary 
+                : language === 'en' ? 'Budgets & Goals' : 'แผนงบประมาณและเงินออม'
+          }
+          subTitle={
+            currentView === 'dashboard' 
+              ? t.welcomeTitle 
+              : currentView === 'summary' 
+                ? t.welcomeSubtitle 
+                : language === 'en' ? 'Track target saving goals and set limits' : 'จำกัดรายจ่ายและบันทึกสะสมเงินออมเพื่อการลงทุน'
+          }
         />
 
         {/* --- DYNAMIC REPORT PERIOD FILTER BAR --- */}
@@ -356,9 +369,12 @@ const FinanceDashboard: React.FC = () => {
             </div>
 
             {/* --- NEW FINANCIAL INTELLIGENCE & ANALYTICS DIAGNOSTIC CARD --- */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+            <div className="bg-gradient-to-br from-white to-slate-50/50 p-6 rounded-2xl shadow-sm border border-slate-100/80 hover:shadow-md hover:border-emerald-200/50 transition-all duration-300 relative overflow-hidden group">
+              {/* Glowing decorative background bubble */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100/20 rounded-full blur-2xl group-hover:bg-emerald-200/30 transition-all duration-500 pointer-events-none"></div>
+
+              <div className="flex items-center gap-2.5 mb-5 relative z-10">
+                <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600 shadow-sm group-hover:scale-105 group-hover:rotate-3 transition-transform">
                   <TrendingUp size={20} />
                 </div>
                 <div>
@@ -449,9 +465,9 @@ const FinanceDashboard: React.FC = () => {
               </div>
 
               {/* Dynamic Health Diagnostic Insight Box */}
-              <div className="mt-5 p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl flex items-start gap-2.5 animate-fadeIn">
+              <div className="mt-5 p-3.5 bg-gradient-to-r from-emerald-50/60 to-emerald-100/20 border border-emerald-100/50 rounded-xl flex items-start gap-2.5 animate-fadeIn relative z-10">
                 <span className="text-sm">💡</span>
-                <p className="text-[11px] leading-relaxed text-slate-600 font-bold font-sans">
+                <p className="text-[11px] leading-relaxed text-emerald-900 font-bold font-sans">
                   {diagnosticMessage}
                 </p>
               </div>
@@ -473,7 +489,7 @@ const FinanceDashboard: React.FC = () => {
             {/* Recent Transactions List */}
             <TransactionsTable transactions={filteredTransactions} />
           </div>
-        ) : (
+        ) : currentView === 'summary' ? (
           /* NEW MONTHLY EXPENSE SUMMARY GRID */
           <CategorySummaryView 
             transactions={filteredTransactions} 
@@ -481,6 +497,13 @@ const FinanceDashboard: React.FC = () => {
               setSelectedInspectorCategory(cat);
               setInspectorSearchQuery('');
             }}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
+        ) : (
+          /* NEW PLANNING BUDGETS & GOALS VIEW */
+          <BudgetGoalsView 
+            transactions={filteredTransactions}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
           />

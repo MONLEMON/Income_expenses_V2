@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
-import { Table, Tag, Progress, Button, Dropdown } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Table, Tag, Progress, Button, Dropdown, Modal, Input, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Search, Trash2, Edit3, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import type { Transaction } from '@/hooks/useTransactions';
+import { useUpdateTransaction, useDeleteTransaction } from '@/hooks/useTransactions';
+import EditTransactionModal from './EditTransactionModal';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -13,6 +15,52 @@ interface TransactionsTableProps {
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions }) => {
   const { language, t } = useTranslation();
+  const { message } = App.useApp();
+  
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [ledgerSearch, setLedgerSearch] = useState('');
+
+  const updateTxMutation = useUpdateTransaction();
+  const deleteTxMutation = useDeleteTransaction();
+
+  const handleActionClick = (key: string, record: Transaction) => {
+    if (key === 'edit') {
+      setSelectedTx(record);
+      setIsEditOpen(true);
+    } else if (key === 'delete') {
+      Modal.confirm({
+        title: language === 'en' ? 'Confirm Deletion' : 'ยืนยันการลบรายการ',
+        icon: <AlertTriangle className="text-rose-500 mr-2 shrink-0" size={22} />,
+        content: language === 'en' 
+          ? `Are you sure you want to delete "${record.item}"? This action cannot be undone.` 
+          : `คุณแน่ใจหรือไม่ที่จะลบรายการ "${record.item}"? การดำเนินการนี้ไม่สามารถยกเลิกได้ในภายหลัง`,
+        okText: language === 'en' ? 'Delete' : 'ลบออก',
+        okType: 'danger',
+        cancelText: language === 'en' ? 'Cancel' : 'ยกเลิก',
+        onOk: async () => {
+          try {
+            await deleteTxMutation.mutateAsync(record.id);
+            message.success(language === 'en' ? 'Transaction deleted successfully!' : 'ลบรายการเรียบร้อยแล้ว!');
+          } catch (err: any) {
+            message.error(err.message || 'Failed to delete transaction');
+          }
+        }
+      });
+    }
+  };
+
+  const handleSaveEdit = async (updatedTx: any) => {
+    await updateTxMutation.mutateAsync(updatedTx);
+  };
+
+  const filteredLedgerTransactions = useMemo(() => {
+    return transactions.filter(t => 
+      t.item.toLowerCase().includes(ledgerSearch.toLowerCase()) ||
+      t.category.toLowerCase().includes(ledgerSearch.toLowerCase())
+    );
+  }, [transactions, ledgerSearch]);
   
   // Custom columns configuration for Ant Design Table
   const columns: ColumnsType<Transaction> = [
@@ -121,13 +169,14 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions }) =
       title: '',
       key: 'action',
       align: 'right',
-      render: () => (
+      render: (_, record) => (
         <Dropdown
           menu={{
             items: [
-              { key: 'edit', label: language === 'en' ? 'Edit record' : 'แก้ไขรายการ' },
-              { key: 'delete', label: language === 'en' ? 'Delete record' : 'ลบรายการ', danger: true }
-            ]
+              { key: 'edit', label: language === 'en' ? 'Edit record' : 'แก้ไขรายการ', icon: <Edit3 size={14} /> },
+              { key: 'delete', label: language === 'en' ? 'Delete record' : 'ลบรายการ', danger: true, icon: <Trash2 size={14} /> }
+            ],
+            onClick: ({ key }) => handleActionClick(key, record)
           }}
           trigger={['click']}
         >
@@ -155,6 +204,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions }) =
           <Button 
             type="primary" 
             ghost
+            onClick={() => setIsLedgerOpen(true)}
             className="border-emerald-200 text-emerald-600 hover:text-emerald-700 hover:border-emerald-300 font-bold rounded-xl cursor-pointer"
             size="middle"
           >
@@ -176,6 +226,70 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions }) =
           className="premium-antd-table text-slate-800"
         />
       </div>
+
+      {/* Ledger View All Modal */}
+      <Modal
+        open={isLedgerOpen}
+        onCancel={() => {
+          setIsLedgerOpen(false);
+          setLedgerSearch('');
+        }}
+        footer={null}
+        width={1000}
+        className="premium-antd-modal"
+        title={
+          <div>
+            <h2 className="text-2xl font-black !text-slate-900 tracking-tight leading-none">
+              {language === 'en' ? 'Detailed Transaction Ledger' : 'สมุดบัญชีรายวันแบบละเอียด'}
+            </h2>
+            <p className="text-xs !text-slate-500 font-bold mt-1.5 font-sans">
+              {language === 'en' 
+                ? 'Full historical ledger records, search, filter, and modify transactions' 
+                : 'ข้อมูลประวัติรายการเดินบัญชีทั้งหมด ค้นหา กรอง และดำเนินการแก้ไขหรือลบรายการขาย'}
+            </p>
+          </div>
+        }
+      >
+        <div className="mt-6 space-y-4">
+          {/* Search inside Ledger */}
+          <div className="relative group max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={16} />
+            <Input 
+              placeholder={language === 'en' ? 'Search by description or category...' : 'ค้นหาด้วยคำอธิบายหรือหมวดหมู่...'}
+              value={ledgerSearch}
+              onChange={(e) => setLedgerSearch(e.target.value)}
+              className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+              style={{ height: '42px' }}
+            />
+          </div>
+
+          <div className="border border-slate-100 rounded-2xl overflow-hidden mt-4">
+            <Table 
+              columns={columns} 
+              dataSource={filteredLedgerTransactions} 
+              rowKey="id"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                pageSizeOptions: ['10', '20', '50'],
+                className: 'premium-table-pagination font-bold px-4'
+              }}
+              className="premium-antd-table text-slate-800"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal 
+        isOpen={isEditOpen} 
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedTx(null);
+        }}
+        transaction={selectedTx}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 };
