@@ -36,6 +36,8 @@ const CATEGORY_BG_CLASSES: Record<string, string> = {
 const transactionsQuerySchema = z.object({
   month: z.string().regex(/^(0[1-9]|1[0-2]|ALL)$/).optional(),
   year: z.string().regex(/^\d{4}$/).optional(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 const createTransactionSchema = z.object({
@@ -60,26 +62,40 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const rawMonth = searchParams.get("month") || undefined;
     const rawYear = searchParams.get("year") || undefined;
+    const rawStart = searchParams.get("startDate") || undefined;
+    const rawEnd = searchParams.get("endDate") || undefined;
 
-    const parseResult = transactionsQuerySchema.safeParse({ month: rawMonth, year: rawYear });
+    const parseResult = transactionsQuerySchema.safeParse({ 
+      month: rawMonth, 
+      year: rawYear,
+      startDate: rawStart,
+      endDate: rawEnd
+    });
     if (!parseResult.success) {
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
 
-    const { month, year } = parseResult.data;
+    const { month, year, startDate, endDate } = parseResult.data;
 
     // Build conditions
     const orderConditions: any[] = [eq(orders.userId, userId)];
     const expenseConditions: any[] = [eq(expenses.userId, userId)];
 
-    if (year) {
-      orderConditions.push(sql`to_char(${orders.orderDate}, 'YYYY') = ${year}`);
-      expenseConditions.push(sql`to_char(${expenses.expenseDate}, 'YYYY') = ${year}`);
-    }
+    if (startDate && endDate) {
+      orderConditions.push(sql`${orders.orderDate} >= ${startDate + ' 00:00:00'}::timestamp`);
+      orderConditions.push(sql`${orders.orderDate} <= ${endDate + ' 23:59:59'}::timestamp`);
+      expenseConditions.push(sql`${expenses.expenseDate} >= ${startDate}`);
+      expenseConditions.push(sql`${expenses.expenseDate} <= ${endDate}`);
+    } else {
+      if (year) {
+        orderConditions.push(sql`to_char(${orders.orderDate}, 'YYYY') = ${year}`);
+        expenseConditions.push(sql`to_char(${expenses.expenseDate}, 'YYYY') = ${year}`);
+      }
 
-    if (month && month !== "ALL") {
-      orderConditions.push(sql`to_char(${orders.orderDate}, 'MM') = ${month}`);
-      expenseConditions.push(sql`to_char(${expenses.expenseDate}, 'MM') = ${month}`);
+      if (month && month !== "ALL") {
+        orderConditions.push(sql`to_char(${orders.orderDate}, 'MM') = ${month}`);
+        expenseConditions.push(sql`to_char(${expenses.expenseDate}, 'MM') = ${month}`);
+      }
     }
 
     // 3. Fetch Orders (Income)

@@ -56,7 +56,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
   // Queries
   const { data: budgetsList = [], isLoading: isBudgetsLoading } = useBudgets(selectedMonth, selectedYear);
   const { data: goalsList = [], isLoading: isGoalsLoading } = useSavingsGoals();
-  const { data: categoriesMap = {} } = useCategoriesDescriptions();
+  const { data: categoriesMap = { expenses: {}, income: {} } } = useCategoriesDescriptions();
 
   // Mutations
   const saveBudgetMutation = useSaveBudget();

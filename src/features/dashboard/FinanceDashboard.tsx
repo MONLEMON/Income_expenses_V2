@@ -22,6 +22,7 @@ import CategoryExpenseChart from './CashFlowChart'; // Donut Chart
 import TransactionsTable from '../transactions/TransactionsTable';
 import CategorySummaryView from './CategorySummaryView'; // Monthly summary view
 import BudgetGoalsView from './BudgetGoalsView'; // Planning budgets and goals
+import AnalyticsView from './AnalyticsView';
 
 // Hooks
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
@@ -53,7 +54,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FinanceDashboard: React.FC = () => {
   const { language, t } = useTranslation();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'summary' | 'planning'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'summary' | 'planning' | 'analytics'>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Dynamic Month & Year Filters (Defaults to Current Month - May "05" and Year "2026")
@@ -282,20 +283,25 @@ const FinanceDashboard: React.FC = () => {
               ? t.dashboard 
               : currentView === 'summary' 
                 ? t.expenseSummary 
-                : language === 'en' ? 'Budgets & Goals' : 'แผนงบประมาณและเงินออม'
+                : currentView === 'planning'
+                  ? (language === 'en' ? 'Budgets & Goals' : 'แผนงบประมาณและเงินออม')
+                  : (language === 'en' ? 'Financial Analytics' : 'วิเคราะห์การเงิน')
           }
           subTitle={
             currentView === 'dashboard' 
               ? t.welcomeTitle 
               : currentView === 'summary' 
                 ? t.welcomeSubtitle 
-                : language === 'en' ? 'Track target saving goals and set limits' : 'จำกัดรายจ่ายและบันทึกสะสมเงินออมเพื่อการลงทุน'
+                : currentView === 'planning'
+                  ? (language === 'en' ? 'Track target saving goals and set limits' : 'จำกัดรายจ่ายและบันทึกสะสมเงินออมเพื่อการลงทุน')
+                  : (language === 'en' ? 'Analyze financial cash flows and track business margins' : 'วิเคราะห์ภาพรวมกระแสเงินสดและสัดส่วนของกิจการ')
           }
         />
 
         {/* --- DYNAMIC REPORT PERIOD FILTER BAR --- */}
-        <div className="flex flex-wrap items-center gap-3 mb-8 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm animate-fadeIn">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">{t.reportPeriod}</span>
+        {(currentView === 'dashboard' || currentView === 'summary' || currentView === 'planning') && (
+          <div className="flex flex-wrap items-center gap-3 mb-8 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm animate-fadeIn">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">{t.reportPeriod}</span>
           
           {/* Month Selector */}
           <Select 
@@ -333,6 +339,7 @@ const FinanceDashboard: React.FC = () => {
             ]}
           />
         </div>
+        )}
 
         {currentView === 'dashboard' ? (
           /* MAIN DASHBOARD OVERVIEW */
@@ -500,13 +507,16 @@ const FinanceDashboard: React.FC = () => {
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
           />
-        ) : (
+        ) : currentView === 'planning' ? (
           /* NEW PLANNING BUDGETS & GOALS VIEW */
           <BudgetGoalsView 
             transactions={filteredTransactions}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
           />
+        ) : (
+          /* NEW FINANCIAL ANALYTICS & REPORTS VIEW */
+          <AnalyticsView />
         )}
       </main>
 
