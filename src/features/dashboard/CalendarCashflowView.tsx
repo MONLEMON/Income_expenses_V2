@@ -26,7 +26,7 @@ interface CalendarCashflowViewProps {
   selectedYear: string;
   onMonthChange?: (month: string) => void;
   onYearChange?: (year: string) => void;
-  onAddTransaction?: () => void;
+  onAddTransaction?: (defaultDate?: string) => void;
 }
 
 const formatCompactAmount = (val: number): string => {
@@ -95,7 +95,7 @@ const CalendarCashflowView: React.FC<CalendarCashflowViewProps> = ({
     return map;
   }, [transactions, activeMonthNum, activeYearNum]);
 
-  // Auto-select latest active day in month when switching months
+  // Auto-select latest active day (or today) only when switching month or year
   useEffect(() => {
     const daysInMonth = new Date(activeYearNum, activeMonthNum, 0).getDate();
     const activeDays = Object.keys(dailyMap)
@@ -107,7 +107,8 @@ const CalendarCashflowView: React.FC<CalendarCashflowViewProps> = ({
     } else if (selectedDay > daysInMonth) {
       setSelectedDay(1);
     }
-  }, [activeMonthNum, activeYearNum, dailyMap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMonthNum, activeYearNum]);
 
   // Calendar Grid computation
   const { daysInMonth, firstDayOfWeek } = useMemo(() => {
@@ -414,7 +415,10 @@ const CalendarCashflowView: React.FC<CalendarCashflowViewProps> = ({
               {onAddTransaction && (
                 <button
                   type="button"
-                  onClick={onAddTransaction}
+                  onClick={() => {
+                    const isoDate = `${activeYearNum}-${String(activeMonthNum).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+                    onAddTransaction(isoDate);
+                  }}
                   className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center gap-1 shadow-sm cursor-pointer active:scale-95 transition-all shrink-0"
                 >
                   <Plus size={14} />

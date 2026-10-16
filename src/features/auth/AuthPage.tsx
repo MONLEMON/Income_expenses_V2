@@ -75,16 +75,8 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const appTheme = {
-    token: {
-      colorPrimary: '#10b981', // Emerald Green
-      borderRadius: 16,
-    },
-  };
-
   return (
-    <ConfigProvider theme={appTheme}>
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans py-8 px-4 sm:px-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans py-8 px-4 sm:px-6">
 
         {/* Floating Theme & Language Switchers */}
         <div className="fixed top-4 right-4 z-20 flex items-center gap-2">
@@ -232,7 +224,6 @@ const AuthPage: React.FC = () => {
           </div> */}
         </div>
       </div>
-    </ConfigProvider>
   );
 };
 

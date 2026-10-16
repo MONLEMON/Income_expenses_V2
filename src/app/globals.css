@@ -127,22 +127,32 @@ body {
 }
 
 /* ================= DARK MODE GLOBAL THEME OVERRIDES ================= */
-html.dark body {
-  background-color: #020617 !important;
-  color: #e2e8f0 !important;
+html.dark {
+  color-scheme: dark;
 }
 
-html.dark .bg-slate-50 {
+html.dark body,
+html.dark .min-h-screen.bg-slate-50 {
   background-color: #020617 !important;
+  color: #f1f5f9 !important;
 }
 
+/* Inner bg-slate-50 / bg-slate-100 elements inside cards, modals, and toolbars */
+html.dark main .bg-slate-50,
+html.dark .ant-modal .bg-slate-50,
 html.dark .bg-slate-50\/40,
 html.dark .bg-slate-50\/50,
 html.dark .bg-slate-50\/60,
 html.dark .bg-slate-50\/70,
 html.dark .bg-slate-50\/80,
+html.dark .bg-slate-100,
 html.dark .bg-slate-100\/80 {
-  background-color: rgba(30, 41, 59, 0.65) !important;
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-200,
+html.dark .bg-slate-200\/70 {
+  background-color: #334155 !important;
 }
 
 html.dark .bg-white,
@@ -151,31 +161,48 @@ html.dark .bg-white\/95 {
   background-color: #0f172a !important;
 }
 
+/* Active pill button inside bg-slate-100 segmented bars */
+html.dark .bg-slate-100 button.bg-white,
+html.dark .bg-slate-100\/80 button.bg-white {
+  background-color: #0f172a !important;
+  color: #34d399 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 html.dark .from-white {
   --tw-gradient-from: #0f172a !important;
   --tw-gradient-via: #0f172a !important;
   --tw-gradient-to: #1e293b !important;
 }
 
+/* Typography contrast in Dark Mode */
 html.dark .text-slate-900,
 html.dark .text-slate-800,
 html.dark .\!text-slate-900,
-html.dark .\!text-slate-800 {
-  color: #f1f5f9 !important;
+html.dark .\!text-slate-800,
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f8fafc !important;
 }
 
 html.dark .text-slate-700,
 html.dark .\!text-slate-700,
 html.dark .text-slate-600,
-html.dark .\!text-slate-600 {
-  color: #cbd5e1 !important;
+html.dark .\!text-slate-600,
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #e2e8f0 !important;
 }
 
 html.dark .text-slate-500,
-html.dark .\!text-slate-500 {
+html.dark .\!text-slate-500,
+html.dark .text-slate-400,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
   color: #94a3b8 !important;
 }
 
+/* Borders in Dark Mode */
 html.dark .border-slate-50,
 html.dark .border-slate-100,
 html.dark .border-slate-100\/60,
@@ -187,12 +214,15 @@ html.dark .border-slate-200\/60,
 html.dark .border-slate-200\/70,
 html.dark .border-slate-200\/80,
 html.dark .border-gray-100 {
-  border-color: #1e293b !important;
+  border-color: #334155 !important;
 }
 
+/* Emerald & Rose tinted badges in Dark Mode */
 html.dark .bg-emerald-50,
-html.dark .bg-emerald-50\/80 {
-  background-color: rgba(6, 78, 59, 0.45) !important;
+html.dark .bg-emerald-50\/80,
+html.dark .bg-emerald-50\/90,
+html.dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.5) !important;
 }
 
 html.dark .text-emerald-950,
@@ -205,34 +235,189 @@ html.dark .border-emerald-100,
 html.dark .border-emerald-100\/50,
 html.dark .border-emerald-100\/60,
 html.dark .border-emerald-200 {
-  border-color: rgba(16, 185, 129, 0.25) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
 }
 
 html.dark .from-emerald-50,
 html.dark .from-emerald-50\/80 {
-  --tw-gradient-from: rgba(6, 78, 59, 0.4) !important;
+  --tw-gradient-from: rgba(6, 78, 59, 0.45) !important;
   --tw-gradient-to: rgba(6, 78, 59, 0.15) !important;
 }
 
 html.dark .bg-rose-50,
-html.dark .bg-rose-50\/80 {
-  background-color: rgba(136, 19, 55, 0.35) !important;
+html.dark .bg-rose-50\/80,
+html.dark .bg-rose-50\/90,
+html.dark .bg-rose-100 {
+  background-color: rgba(136, 19, 55, 0.45) !important;
 }
 
 html.dark .text-rose-900,
+html.dark .text-rose-800,
 html.dark .text-rose-700 {
   color: #fda4af !important;
 }
 
 html.dark .border-rose-100,
 html.dark .border-rose-100\/60 {
-  border-color: rgba(244, 63, 94, 0.25) !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
 }
 
+/* Native HTML Inputs, Selects & Textareas in Dark Mode */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+  color-scheme: dark;
+}
+
+html.dark select option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Ant Design Inputs, InputNumber, Select, DatePicker, Dropdowns & Modals in Dark Mode */
 html.dark .ant-modal-content {
   background-color: #0f172a !important;
+  border-color: #334155 !important;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.7) !important;
+}
+
+html.dark .ant-modal-header {
+  background-color: transparent !important;
+}
+
+html.dark .ant-modal-close {
+  color: #94a3b8 !important;
+}
+
+html.dark .ant-modal-close:hover {
+  color: #f8fafc !important;
+  background-color: #1e293b !important;
+}
+
+html.dark .ant-input,
+html.dark .ant-input-affix-wrapper,
+html.dark .ant-input-number,
+html.dark .ant-select-selector,
+html.dark .ant-picker {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark .ant-input-affix-wrapper > input.ant-input,
+html.dark .ant-input-number-input,
+html.dark .ant-picker-input > input {
+  background-color: transparent !important;
+  color: #f8fafc !important;
+}
+
+html.dark .ant-select-selection-item,
+html.dark .ant-select-selection-search-input,
+html.dark .ant-select-arrow,
+html.dark .ant-picker-suffix,
+html.dark .ant-picker-clear,
+html.dark .ant-input-password-icon,
+html.dark .ant-input-prefix {
+  color: #cbd5e1 !important;
+}
+
+html.dark .ant-select-selection-item {
+  color: #f8fafc !important;
+}
+
+html.dark .ant-select-selection-placeholder,
+html.dark .ant-input::placeholder,
+html.dark .ant-input-number-input::placeholder,
+html.dark .ant-picker-input > input::placeholder {
+  color: #64748b !important;
+}
+
+html.dark .ant-select-dropdown,
+html.dark .ant-picker-dropdown .ant-picker-panel-container,
+html.dark .ant-dropdown .ant-dropdown-menu {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .ant-select-item,
+html.dark .ant-dropdown-menu-item {
+  color: #e2e8f0 !important;
+}
+
+html.dark .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+html.dark .ant-dropdown-menu-item:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+html.dark .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark .ant-segmented {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+html.dark .ant-segmented-item {
+  color: #94a3b8 !important;
+}
+
+html.dark .ant-segmented-item-selected {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Ant Design Table & Pagination in Dark Mode */
+html.dark .ant-table,
+html.dark .ant-table-container,
+html.dark .ant-table-cell {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
   border-color: #1e293b !important;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.6) !important;
+}
+
+html.dark .ant-table-thead > tr > th {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+
+html.dark .ant-table-tbody > tr:hover > td {
+  background-color: #1e293b !important;
+}
+
+html.dark .ant-pagination-item a,
+html.dark .ant-pagination-prev button,
+html.dark .ant-pagination-next button {
+  color: #cbd5e1 !important;
+}
+
+html.dark .ant-pagination-item-active {
+  background-color: #1e293b !important;
+  border-color: #10b981 !important;
+}
+
+/* Recharts Tooltips in Dark Mode */
+html.dark .recharts-default-tooltip {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .recharts-tooltip-label,
+html.dark .recharts-tooltip-item {
+  color: #f8fafc !important;
 }
 
 html.dark ::-webkit-scrollbar-thumb {
@@ -243,5 +428,16 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
 
+/* Ensure Ant Design InputNumber and DatePicker span full row width */
+.ant-input-number,
+.ant-picker {
+  width: 100% !important;
+}
+
+.ant-input-number .ant-input-number-input-wrap,
+.ant-input-number .ant-input-number-input {
+  width: 100% !important;
+  flex: 1 1 auto;
+}
 
 

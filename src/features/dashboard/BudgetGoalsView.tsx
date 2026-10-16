@@ -442,7 +442,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
               min={1}
               precision={2}
               inputMode="decimal"
-              style={{ height: '46px', display: 'flex', alignItems: 'center' }}
+              style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center' }}
             />
           </Form.Item>
 
@@ -515,7 +515,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                 min={1}
                 precision={2}
                 inputMode="decimal"
-                style={{ height: '46px', display: 'flex', alignItems: 'center' }}
+                style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center' }}
               />
             </Form.Item>
 
@@ -531,7 +531,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                 min={0}
                 precision={2}
                 inputMode="decimal"
-                style={{ height: '46px', display: 'flex', alignItems: 'center' }}
+                style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center' }}
               />
             </Form.Item>
           </div>
@@ -604,7 +604,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
               min={0.01}
               precision={2}
               inputMode="decimal"
-              style={{ height: '46px', display: 'flex', alignItems: 'center' }}
+              style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center' }}
               autoFocus
             />
           </Form.Item>

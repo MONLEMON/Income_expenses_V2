@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   TrendingDown,
   DollarSign,
@@ -12,7 +12,9 @@ import {
   CalendarDays,
   LayoutDashboard,
   Inbox,
-  TrendingUp
+  TrendingUp,
+  History,
+  SlidersHorizontal
 } from 'lucide-react';
 import { Select, Spin, Progress } from 'antd';
 import Sidebar, { type NavViewType } from '@/components/layouts/Sidebar';
@@ -27,11 +29,18 @@ import BudgetGoalsView from './BudgetGoalsView'; // Planning budgets and goals
 import AnalyticsView from './AnalyticsView';
 import CalendarCashflowView from './CalendarCashflowView';
 
-// Hooks
+// Hooks & Helpers
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
 import { useTransactions, useAddTransaction } from '@/hooks/useTransactions';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import { useAuthStore } from '@/hooks/useAuthStore';
+import {
+  readUserPeriodCookie,
+  writeUserPeriodCookie,
+  getDefaultPeriodData,
+  type PeriodMode,
+  type SavedPeriodHistoryItem,
+} from '@/lib/periodCookie';
 
 // --- Colors for Categories ---
 const CATEGORY_COLORS: Record<string, string> = {
@@ -56,24 +65,134 @@ const CATEGORY_COLORS: Record<string, string> = {
   'all': '#ec4899'              // Pink
 };
 
+const formatDisplayDate = (isoDate: string) => {
+  const [y, m, d] = isoDate.split('-');
+  if (!y || !m || !d) return isoDate;
+  return `${d}/${m}/${y}`;
+};
+
 const FinanceDashboard: React.FC = () => {
   const { language, t } = useTranslation();
   const [currentView, setCurrentView] = useState<NavViewType>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInitialDate, setModalInitialDate] = useState<string | null>(null);
   
-  // Dynamic Month & Year Filters (Defaults to Current Month - May "05" and Year "2026")
-  const currentMonthValue = String(new Date().getMonth() + 1).padStart(2, '0');
-  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthValue);
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const userId = useAuthStore((state) => state.user?.userId);
+  const logout = useAuthStore((state) => state.logout);
+
+  // Dynamic Period Filters (Month/Year OR Custom Date Range, persisted per user in Cookie)
+  const defaultPeriod = useMemo(() => getDefaultPeriodData(), []);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>(defaultPeriod.mode);
+  const [selectedMonth, setSelectedMonth] = useState<string>(defaultPeriod.selectedMonth);
+  const [selectedYear, setSelectedYear] = useState<string>(defaultPeriod.selectedYear);
+  const [customStartDate, setCustomStartDate] = useState<string>(defaultPeriod.customStartDate);
+  const [customEndDate, setCustomEndDate] = useState<string>(defaultPeriod.customEndDate);
+  const [recentPeriods, setRecentPeriods] = useState<SavedPeriodHistoryItem[]>([]);
+  const [cookieLoadedForUser, setCookieLoadedForUser] = useState<string | number | null | undefined>(undefined);
+
+  // Load saved Period preference from Cookie for current user
+  useEffect(() => {
+    const saved = readUserPeriodCookie(userId);
+    setPeriodMode(saved.mode);
+    setSelectedMonth(saved.selectedMonth);
+    setSelectedYear(saved.selectedYear);
+    setCustomStartDate(saved.customStartDate);
+    setCustomEndDate(saved.customEndDate);
+    setRecentPeriods(saved.recentPeriods || []);
+    setCookieLoadedForUser(userId ?? 'guest');
+  }, [userId]);
+
+  // Helper to build a history entry and persist to Cookie whenever user changes period
+  const persistPeriodSelection = (next: {
+    mode?: PeriodMode;
+    month?: string;
+    year?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    const modeVal = next.mode ?? periodMode;
+    const monthVal = next.month ?? selectedMonth;
+    const yearVal = next.year ?? selectedYear;
+    const startVal = next.startDate ?? customStartDate;
+    const endVal = next.endDate ?? customEndDate;
+
+    let historyEntry: SavedPeriodHistoryItem;
+    if (modeVal === 'custom') {
+      const rangeStr = `${formatDisplayDate(startVal)} - ${formatDisplayDate(endVal)}`;
+      historyEntry = {
+        id: `custom:${startVal}:${endVal}`,
+        labelTh: rangeStr,
+        labelEn: rangeStr,
+        mode: 'custom',
+        startDate: startVal,
+        endDate: endVal,
+      };
+    } else {
+      const mShortTh =
+        monthVal === 'ALL'
+          ? `ทั้งปี ${yearVal}`
+          : `${new Date(parseInt(yearVal), parseInt(monthVal) - 1, 1).toLocaleDateString('th-TH', { month: 'short' })} ${yearVal}`;
+      const mShortEn =
+        monthVal === 'ALL'
+          ? `All ${yearVal}`
+          : `${new Date(parseInt(yearVal), parseInt(monthVal) - 1, 1).toLocaleDateString('en-US', { month: 'short' })} ${yearVal}`;
+      historyEntry = {
+        id: `month:${monthVal}:${yearVal}`,
+        labelTh: mShortTh,
+        labelEn: mShortEn,
+        mode: 'month',
+        month: monthVal,
+        year: yearVal,
+      };
+    }
+
+    const updatedRecent = [
+      historyEntry,
+      ...recentPeriods.filter((item) => item.id !== historyEntry.id),
+    ].slice(0, 4);
+
+    setRecentPeriods(updatedRecent);
+
+    if (cookieLoadedForUser !== undefined) {
+      writeUserPeriodCookie(userId, {
+        mode: modeVal,
+        selectedMonth: monthVal,
+        selectedYear: yearVal,
+        customStartDate: startVal,
+        customEndDate: endVal,
+        recentPeriods: updatedRecent,
+      });
+    }
+  };
+
+  // Apply quick preset range in Custom Mode (e.g., Today, Last 7 Days, Last 15 Days, Last 30 Days)
+  const applyQuickDayRange = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    if (days > 1) {
+      start.setDate(end.getDate() - (days - 1));
+    }
+    const startIso = start.toISOString().split('T')[0];
+    const endIso = end.toISOString().split('T')[0];
+    setPeriodMode('custom');
+    setCustomStartDate(startIso);
+    setCustomEndDate(endIso);
+    persistPeriodSelection({ mode: 'custom', startDate: startIso, endDate: endIso });
+  };
 
   // Drill-down inspector drawer states
   const [selectedInspectorCategory, setSelectedInspectorCategory] = useState<string | null>(null);
   const [inspectorSearchQuery, setInspectorSearchQuery] = useState('');
 
   // Real-time Database Queries
-  const logout = useAuthStore((state) => state.logout);
+  const useCustomRangeQuery = periodMode === 'custom' && currentView !== 'calendar';
   const { data: summaryData, isLoading: isSummaryLoading, isError: isSummaryError, error: summaryError } = useMonthlySummary(selectedYear);
-  const { data: transactionsList = [], isLoading: isTxLoading, isError: isTxError, error: txError } = useTransactions(selectedMonth, selectedYear);
+  const { data: transactionsList = [], isLoading: isTxLoading, isError: isTxError, error: txError } = useTransactions(
+    useCustomRangeQuery ? undefined : selectedMonth,
+    useCustomRangeQuery ? undefined : selectedYear,
+    useCustomRangeQuery ? customStartDate : undefined,
+    useCustomRangeQuery ? customEndDate : undefined
+  );
   const addTransactionMutation = useAddTransaction();
 
   // Combine loading and error states
@@ -313,12 +432,18 @@ const FinanceDashboard: React.FC = () => {
       <Sidebar 
         currentView={currentView} 
         onViewChange={setCurrentView} 
-        onAddTransaction={() => setIsModalOpen(true)}
+        onAddTransaction={() => {
+          setModalInitialDate(null);
+          setIsModalOpen(true);
+        }}
       />
       
       <main className="p-0 max-w-[1600px] mx-auto">
         <Header 
-          onAddTransaction={() => setIsModalOpen(true)} 
+          onAddTransaction={() => {
+            setModalInitialDate(null);
+            setIsModalOpen(true);
+          }} 
           title={
             currentView === 'dashboard' 
               ? t.dashboard 
@@ -343,79 +468,234 @@ const FinanceDashboard: React.FC = () => {
           }
         />
 
-        {/* --- DYNAMIC REPORT PERIOD FILTER BAR --- */}
+        {/* --- DYNAMIC REPORT PERIOD FILTER BAR (WITH CUSTOM RANGE & COOKIE PERSISTENCE) --- */}
         {(currentView === 'dashboard' || currentView === 'calendar' || currentView === 'summary' || currentView === 'planning') && (
-          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4 md:mb-8 bg-white/90 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm animate-fadeIn">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[230px]">
-              <div className="flex items-center gap-1.5 pl-1 shrink-0 text-slate-400">
-                <Calendar size={15} className="text-emerald-600 shrink-0" />
-                <span className="hidden xs:inline text-[11px] sm:text-xs font-black uppercase tracking-wider">{t.reportPeriod}:</span>
-              </div>
-            
-              {/* Month Selector */}
-              <Select 
-                value={selectedMonth}
-                onChange={(val) => setSelectedMonth(val)}
-                className="font-bold text-xs hover:border-emerald-200 min-w-[105px] sm:min-w-[140px] flex-1 sm:flex-initial"
-                style={{ height: '38px' }}
-                options={[
-                  { value: 'ALL', label: t.allMonths },
-                  { value: '01', label: t.january },
-                  { value: '02', label: t.february },
-                  { value: '03', label: t.march },
-                  { value: '04', label: t.april },
-                  { value: '05', label: t.may },
-                  { value: '06', label: t.june },
-                  { value: '07', label: t.july },
-                  { value: '08', label: t.august },
-                  { value: '09', label: t.september },
-                  { value: '10', label: t.october },
-                  { value: '11', label: t.november },
-                  { value: '12', label: t.december }
-                ]}
-              />
+          <div className="mb-4 md:mb-8 bg-white/90 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm animate-fadeIn space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+              {/* Period Mode Switcher (By Month vs Custom Date Range) */}
+              {currentView !== 'calendar' && (
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPeriodMode('month');
+                      persistPeriodSelection({ mode: 'month' });
+                    }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                      periodMode === 'month'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Calendar size={13} />
+                    <span>{language === 'en' ? 'By Month' : 'รายเดือน/ปี'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPeriodMode('custom');
+                      persistPeriodSelection({ mode: 'custom' });
+                    }}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                      periodMode === 'custom'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <SlidersHorizontal size={13} />
+                    <span>{language === 'en' ? 'Custom Range' : 'กำหนดช่วงวันเอง'}</span>
+                  </button>
+                </div>
+              )}
 
-              {/* Year Selector */}
-              <Select 
-                value={selectedYear}
-                onChange={(val) => setSelectedYear(val)}
-                className="font-bold text-xs hover:border-emerald-200 w-[88px] sm:min-w-[95px] shrink-0"
-                style={{ height: '38px' }}
-                options={[
-                  { value: '2026', label: '2026' },
-                  { value: '2025', label: '2025' },
-                  { value: '2024', label: '2024' }
-                ]}
-              />
+              {/* Active Period Pickers */}
+              {periodMode === 'month' || currentView === 'calendar' ? (
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-[210px]">
+                  {currentView === 'calendar' && (
+                    <div className="flex items-center gap-1.5 pl-1 shrink-0 text-slate-400">
+                      <Calendar size={15} className="text-emerald-600 shrink-0" />
+                      <span className="hidden xs:inline text-[11px] sm:text-xs font-black uppercase tracking-wider">{t.reportPeriod}:</span>
+                    </div>
+                  )}
+
+                  {/* Month Selector */}
+                  <Select 
+                    value={selectedMonth}
+                    onChange={(val) => {
+                      setSelectedMonth(val);
+                      persistPeriodSelection({ mode: 'month', month: val });
+                    }}
+                    className="font-bold text-xs hover:border-emerald-200 min-w-[105px] sm:min-w-[140px] flex-1 sm:flex-initial"
+                    style={{ height: '38px' }}
+                    options={[
+                      { value: 'ALL', label: t.allMonths },
+                      { value: '01', label: t.january },
+                      { value: '02', label: t.february },
+                      { value: '03', label: t.march },
+                      { value: '04', label: t.april },
+                      { value: '05', label: t.may },
+                      { value: '06', label: t.june },
+                      { value: '07', label: t.july },
+                      { value: '08', label: t.august },
+                      { value: '09', label: t.september },
+                      { value: '10', label: t.october },
+                      { value: '11', label: t.november },
+                      { value: '12', label: t.december }
+                    ]}
+                  />
+
+                  {/* Year Selector */}
+                  <Select 
+                    value={selectedYear}
+                    onChange={(val) => {
+                      setSelectedYear(val);
+                      persistPeriodSelection({ mode: 'month', year: val });
+                    }}
+                    className="font-bold text-xs hover:border-emerald-200 w-[88px] sm:min-w-[95px] shrink-0"
+                    style={{ height: '38px' }}
+                    options={[
+                      { value: '2026', label: '2026' },
+                      { value: '2025', label: '2025' },
+                      { value: '2024', label: '2024' }
+                    ]}
+                  />
+                </div>
+              ) : (
+                /* Custom Start Date -> End Date Pickers + Quick Day Range Pills */
+                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
+                  <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200/80 flex-1 sm:flex-initial">
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        setCustomStartDate(val);
+                        persistPeriodSelection({ mode: 'custom', startDate: val });
+                      }}
+                      className="bg-transparent text-xs font-bold text-slate-800 outline-none border-none cursor-pointer min-w-0 flex-1"
+                    />
+                    <span className="text-[10px] font-extrabold text-slate-400 px-0.5">
+                      {language === 'en' ? 'to' : 'ถึง'}
+                    </span>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        setCustomEndDate(val);
+                        persistPeriodSelection({ mode: 'custom', endDate: val });
+                      }}
+                      className="bg-transparent text-xs font-bold text-slate-800 outline-none border-none cursor-pointer min-w-0 flex-1"
+                    />
+                  </div>
+
+                  {/* Quick Range Presets */}
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                    {[
+                      { days: 1, labelEn: 'Today', labelTh: 'วันนี้' },
+                      { days: 7, labelEn: '7D', labelTh: '7 วัน' },
+                      { days: 15, labelEn: '15D', labelTh: '15 วัน' },
+                      { days: 30, labelEn: '30D', labelTh: '30 วัน' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.days}
+                        type="button"
+                        onClick={() => applyQuickDayRange(preset.days)}
+                        className="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200/60 transition-colors shrink-0 cursor-pointer active:scale-95"
+                      >
+                        {language === 'en' ? preset.labelEn : preset.labelTh}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick View Switcher (Overview vs Daily Calendar) */}
+              {(currentView === 'dashboard' || currentView === 'calendar') && (
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('dashboard')}
+                    className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
+                      currentView === 'dashboard'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <LayoutDashboard size={14} />
+                    <span>{language === 'en' ? 'Overview' : 'ภาพรวม'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('calendar')}
+                    className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
+                      currentView === 'calendar'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <CalendarDays size={14} />
+                    <span>{language === 'en' ? 'Daily Calendar' : 'ปฏิทินรายวัน'}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Quick View Switcher (Overview vs Daily Calendar) */}
-            {(currentView === 'dashboard' || currentView === 'calendar') && (
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setCurrentView('dashboard')}
-                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
-                    currentView === 'dashboard'
-                      ? 'bg-white text-emerald-700 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  <LayoutDashboard size={14} />
-                  <span>{language === 'en' ? 'Overview' : 'ภาพรวม'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentView('calendar')}
-                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
-                    currentView === 'calendar'
-                      ? 'bg-white text-emerald-700 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  <CalendarDays size={14} />
-                  <span>{language === 'en' ? 'Daily Calendar' : 'ปฏิทินรายวัน'}</span>
-                </button>
+            {/* Cookie Saved Recent Periods Strip */}
+            {recentPeriods.length > 0 && currentView !== 'calendar' && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1 text-[10px] font-extrabold text-slate-400 shrink-0 pr-1">
+                  <History size={12} className="text-emerald-600" />
+                  <span>{language === 'en' ? 'Saved Periods:' : 'ที่เลือกไว้ล่าสุด:'}</span>
+                </div>
+                {recentPeriods.map((item) => {
+                  const isActive =
+                    (item.mode === 'month' &&
+                      periodMode === 'month' &&
+                      item.month === selectedMonth &&
+                      item.year === selectedYear) ||
+                    (item.mode === 'custom' &&
+                      periodMode === 'custom' &&
+                      item.startDate === customStartDate &&
+                      item.endDate === customEndDate);
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        if (item.mode === 'custom' && item.startDate && item.endDate) {
+                          setPeriodMode('custom');
+                          setCustomStartDate(item.startDate);
+                          setCustomEndDate(item.endDate);
+                          persistPeriodSelection({
+                            mode: 'custom',
+                            startDate: item.startDate,
+                            endDate: item.endDate,
+                          });
+                        } else if (item.mode === 'month' && item.month && item.year) {
+                          setPeriodMode('month');
+                          setSelectedMonth(item.month);
+                          setSelectedYear(item.year);
+                          persistPeriodSelection({
+                            mode: 'month',
+                            month: item.month,
+                            year: item.year,
+                          });
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black transition-all shrink-0 cursor-pointer active:scale-95 border ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border-slate-200/60 hover:text-slate-700'
+                      }`}
+                    >
+                      {language === 'en' ? item.labelEn : item.labelTh}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -591,12 +871,21 @@ const FinanceDashboard: React.FC = () => {
             transactions={transactionsList || []}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
-            onMonthChange={setSelectedMonth}
-            onYearChange={setSelectedYear}
-            onAddTransaction={() => setIsModalOpen(true)}
+            onMonthChange={(m) => {
+              setSelectedMonth(m);
+              persistPeriodSelection({ mode: 'month', month: m });
+            }}
+            onYearChange={(y) => {
+              setSelectedYear(y);
+              persistPeriodSelection({ mode: 'month', year: y });
+            }}
+            onAddTransaction={(defaultDate) => {
+              setModalInitialDate(defaultDate || null);
+              setIsModalOpen(true);
+            }}
           />
         ) : currentView === 'summary' ? (
-          /* MONTHLY EXPENSE SUMMARY GRID */
+          /* MONTHLY / CUSTOM PERIOD EXPENSE SUMMARY GRID */
           <CategorySummaryView 
             transactions={filteredTransactions} 
             onSelectCategory={(cat) => {
@@ -605,6 +894,11 @@ const FinanceDashboard: React.FC = () => {
             }}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
+            customPeriodLabel={
+              periodMode === 'custom'
+                ? `${formatDisplayDate(customStartDate)} - ${formatDisplayDate(customEndDate)}`
+                : undefined
+            }
           />
         ) : currentView === 'planning' ? (
           /* PLANNING BUDGETS & GOALS VIEW */
@@ -723,7 +1017,11 @@ const FinanceDashboard: React.FC = () => {
       {/* Save Transaction Modal */}
       <AddTransactionModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        initialDate={modalInitialDate}
+        onClose={() => {
+          setIsModalOpen(false);
+          setModalInitialDate(null);
+        }} 
         onAdd={handleAddTransaction}
       />
     </div>

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, DatePicker, Select, Segmented, ConfigProvider, App } from 'antd';
+import { Modal, Form, Input, InputNumber, DatePicker, Select, Segmented, ConfigProvider, App, theme as antdTheme } from 'antd';
 import dayjs from 'dayjs';
 import { useCategoriesDescriptions, Transaction } from '@/hooks/useTransactions';
 import { useTranslation } from '@/hooks/useLanguageStore';
+import { useThemeStore } from '@/hooks/useThemeStore';
 
 interface EditTransactionModalProps {
   isOpen: boolean;
@@ -131,8 +132,11 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     }
   };
 
+  const isDark = useThemeStore((state) => state.theme === 'dark');
+
   // --- Dynamic Color Shifting tokens ---
   const localTheme = {
+    algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
     token: {
       colorPrimary: isIncome ? '#10b981' : '#f43f5e', // Emerald green vs Rose red
       borderRadius: 16,
@@ -202,7 +206,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               min={0.01}
               precision={2}
               inputMode="decimal"
-              style={{ height: '46px', display: 'flex', alignItems: 'center' }}
+              style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center' }}
             />
           </Form.Item>
 
@@ -236,7 +240,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                       value: '__custom_category__'
                     }
                   ]}
-                  style={{ height: '46px' }}
+                  style={{ width: '100%', height: '46px' }}
                 />
               ) : (
                 <div className="flex gap-2">
@@ -281,7 +285,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 className="w-full font-bold !text-slate-900"
                 format="DD/MM/YYYY"
                 placeholder={t.datePickerPlaceholder}
-                style={{ height: '46px' }}
+                style={{ width: '100%', height: '46px' }}
                 inputReadOnly={true}
               />
             </Form.Item>

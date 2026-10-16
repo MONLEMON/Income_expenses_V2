@@ -66,25 +66,30 @@ interface CategorySummaryViewProps {
   onSelectCategory: (category: string) => void;
   selectedMonth: string;
   selectedYear: string;
+  customPeriodLabel?: string;
 }
 
 const CategorySummaryView: React.FC<CategorySummaryViewProps> = ({ 
   transactions, 
   onSelectCategory,
   selectedMonth,
-  selectedYear
+  selectedYear,
+  customPeriodLabel
 }) => {
   const { language, t } = useTranslation();
   
-  // Format selected month name dynamically based on locale
+  // Format selected month name or custom date range dynamically based on locale
   const periodName = useMemo(() => {
+    if (customPeriodLabel) {
+      return customPeriodLabel;
+    }
     if (selectedMonth === 'ALL') {
       return language === 'en' ? `Year ${selectedYear}` : `ปี ${selectedYear}`;
     }
     const dateObj = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1);
     const monthName = dateObj.toLocaleDateString(language === 'en' ? 'en-US' : 'th-TH', { month: 'long' });
     return `${monthName} ${selectedYear}`;
-  }, [selectedMonth, selectedYear, language]);
+  }, [selectedMonth, selectedYear, language, customPeriodLabel]);
 
   // Calculate category aggregates dynamically
   const aggregates = useMemo(() => {

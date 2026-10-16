@@ -18,14 +18,24 @@ export interface Transaction {
  * useTransactions Hook
  * Fetches the recent normalized transactions list from the database
  */
-export const useTransactions = (month?: string, year?: string) => {
+export const useTransactions = (
+  month?: string,
+  year?: string,
+  startDate?: string,
+  endDate?: string
+) => {
   const userId = useAuthStore((state) => state.user?.userId);
   return useQuery<Transaction[]>({
-    queryKey: ['transactions', userId, month, year],
+    queryKey: ['transactions', userId, month, year, startDate, endDate],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
-      if (month) queryParams.append('month', month);
-      if (year) queryParams.append('year', year);
+      if (startDate && endDate) {
+        queryParams.append('startDate', startDate);
+        queryParams.append('endDate', endDate);
+      } else {
+        if (month) queryParams.append('month', month);
+        if (year) queryParams.append('year', year);
+      }
 
       const res = await fetchWithAuth(`/api/transactions?${queryParams.toString()}`);
       if (!res.ok) {
@@ -85,9 +95,10 @@ export const useAddTransaction = () => {
       return res.json();
     },
     onSuccess: () => {
-      // Invalidate both report summaries and recent transactions to trigger live chart animations
+      // Invalidate report summaries, recent transactions, and category-description mappings
       queryClient.invalidateQueries({ queryKey: ['monthly-summary'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-descriptions'] });
     },
   });
 };
