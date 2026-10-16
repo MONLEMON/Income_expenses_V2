@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Bell, ChevronDown, Plus, KeyRound, LogOut, Lock } from 'lucide-react';
+import { Search, Bell, ChevronDown, Plus, KeyRound, LogOut, Lock, Moon, Sun } from 'lucide-react';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import { useAuthStore } from '@/hooks/useAuthStore';
+import { useThemeStore } from '@/hooks/useThemeStore';
 import { fetchWithAuth } from '@/lib/apiClient';
 import { Dropdown, Modal, Form, Input, ConfigProvider, App } from 'antd';
 import type { MenuProps } from 'antd';
@@ -21,6 +22,8 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { message } = App.useApp();
   const { language, setLanguage, t } = useTranslation();
+  const themeMode = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -72,6 +75,14 @@ const Header: React.FC<HeaderProps> = ({
       type: 'divider'
     },
     {
+      key: 'toggle-theme',
+      label: themeMode === 'dark'
+        ? (language === 'en' ? 'Switch to Light Mode' : 'โหมดสว่าง (Light Mode)')
+        : (language === 'en' ? 'Switch to Dark Mode' : 'โหมดมืด (Dark Mode)'),
+      icon: themeMode === 'dark' ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} />,
+      onClick: toggleTheme
+    },
+    {
       key: 'change-password',
       label: language === 'en' ? 'Change Password' : 'เปลี่ยนรหัสผ่าน',
       icon: <KeyRound size={14} />,
@@ -92,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="mb-4 md:mb-8 animate-fadeIn print:hidden">
       {/* Top App Bar Row */}
-      <div className="flex items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           {/* Mobile Brand Badge */}
           <div className="md:hidden w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-sm shadow-emerald-200 shrink-0 select-none">
@@ -109,7 +120,21 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Dark Mode Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="h-9 w-9 md:h-10 md:w-10 bg-white border border-slate-200/80 rounded-xl text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center justify-center shadow-sm cursor-pointer select-none active:scale-95"
+            title={themeMode === 'dark' ? (language === 'en' ? 'Light Mode' : 'โหมดสว่าง') : (language === 'en' ? 'Dark Mode' : 'โหมดมืด')}
+          >
+            {themeMode === 'dark' ? (
+              <Sun size={17} className="text-amber-400" />
+            ) : (
+              <Moon size={17} className="text-slate-600" />
+            )}
+          </button>
+
           {/* Language Selection Button */}
           <button 
             onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}

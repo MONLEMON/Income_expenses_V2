@@ -13,6 +13,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "POS Income & Expense Tracker",
   description: "Unified premium portal for managing income and expenses with transaction ledger analysis",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

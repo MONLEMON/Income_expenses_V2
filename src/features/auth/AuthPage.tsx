@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, ConfigProvider, App } from 'antd';
-import { UserOutlined, LockOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useTranslation } from '@/hooks/useLanguageStore';
+import { useThemeStore } from '@/hooks/useThemeStore';
 
 const AuthPage: React.FC = () => {
   const { message } = App.useApp();
@@ -12,6 +14,8 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const loginStore = useAuthStore((state) => state.login);
   const { language, setLanguage } = useTranslation();
+  const themeMode = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const [form] = Form.useForm();
 
   const handleFinish = async (values: any) => {
@@ -82,15 +86,25 @@ const AuthPage: React.FC = () => {
     <ConfigProvider theme={appTheme}>
       <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans py-8 px-4 sm:px-6">
 
-        {/* Floating Language Switcher */}
-        <button
-          type="button"
-          onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
-          className="fixed top-4 right-4 z-20 px-3 py-2 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl text-slate-700 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm font-black text-xs cursor-pointer select-none active:scale-95"
-        >
-          <span>{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
-          <span>{language === 'en' ? 'EN' : 'TH'}</span>
-        </button>
+        {/* Floating Theme & Language Switchers */}
+        <div className="fixed top-4 right-4 z-20 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="h-9 w-9 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl text-slate-700 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center justify-center shadow-sm cursor-pointer select-none active:scale-95"
+            title={themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          >
+            {themeMode === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+            className="h-9 px-3 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl text-slate-700 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm font-black text-xs cursor-pointer select-none active:scale-95"
+          >
+            <span>{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
+            <span>{language === 'en' ? 'EN' : 'TH'}</span>
+          </button>
+        </div>
 
         {/* Modern background blur shapes for ambient lighting effect */}
         <div className="absolute w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] rounded-full bg-emerald-300/30 blur-[100px] -top-20 -left-20 animate-pulse duration-5000"></div>

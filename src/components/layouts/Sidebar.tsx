@@ -1,18 +1,33 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, FolderOpen, LogOut, Target, BarChart3, Plus } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, LogOut, Target, BarChart3, Plus, CalendarDays } from 'lucide-react';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
+export type NavViewType = 'dashboard' | 'calendar' | 'summary' | 'planning' | 'analytics';
+
 interface SidebarProps {
-  currentView?: 'dashboard' | 'summary' | 'planning' | 'analytics';
-  onViewChange?: (view: 'dashboard' | 'summary' | 'planning' | 'analytics') => void;
+  currentView?: NavViewType;
+  onViewChange?: (view: NavViewType) => void;
   onAddTransaction?: () => void;
 }
 
-const navItems: Array<{
-  id: 'dashboard' | 'summary' | 'planning' | 'analytics';
+const desktopNavItems: Array<{
+  id: NavViewType;
+  icon: React.ElementType;
+  labelEn: string;
+  labelTh: string;
+}> = [
+  { id: 'dashboard', icon: LayoutDashboard, labelEn: 'Dashboard', labelTh: 'ภาพรวม' },
+  { id: 'calendar', icon: CalendarDays, labelEn: 'Calendar', labelTh: 'ปฏิทินรายวัน' },
+  { id: 'summary', icon: FolderOpen, labelEn: 'Summary', labelTh: 'หมวดหมู่' },
+  { id: 'planning', icon: Target, labelEn: 'Planning', labelTh: 'แผนงบ/ออม' },
+  { id: 'analytics', icon: BarChart3, labelEn: 'Analytics', labelTh: 'วิเคราะห์' },
+];
+
+const mobileNavItems: Array<{
+  id: NavViewType;
   icon: React.ElementType;
   labelEn: string;
   labelTh: string;
@@ -27,9 +42,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChan
   const { language } = useTranslation();
   const logout = useAuthStore((state) => state.logout);
 
-  const renderMobileNavButton = (item: typeof navItems[number]) => {
+  const renderMobileNavButton = (item: typeof mobileNavItems[number]) => {
     const Icon = item.icon;
-    const isActive = currentView === item.id;
+    // Highlight 'dashboard' tab on mobile dock when in either 'dashboard' or 'calendar' sub-mode
+    const isActive = currentView === item.id || (item.id === 'dashboard' && currentView === 'calendar');
     const label = language === 'en' ? item.labelEn : item.labelTh;
 
     return (
@@ -74,8 +90,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChan
         </div>
         
         {/* Desktop Nav Icons */}
-        <nav className="flex flex-col space-y-4 px-3 w-full">
-          {navItems.map((item) => {
+        <nav className="flex flex-col space-y-3.5 px-3 w-full">
+          {desktopNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
             const label = language === 'en' ? item.labelEn : item.labelTh;
@@ -123,8 +139,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChan
         className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] pb-safe print:hidden"
       >
         <div className="grid grid-cols-5 h-16 max-w-lg mx-auto items-center px-1.5">
-          {renderMobileNavButton(navItems[0])}
-          {renderMobileNavButton(navItems[1])}
+          {renderMobileNavButton(mobileNavItems[0])}
+          {renderMobileNavButton(mobileNavItems[1])}
 
           {/* Center Quick-Add Transaction Action Button */}
           <div className="flex flex-col items-center justify-center h-full relative">
@@ -141,8 +157,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChan
             </span>
           </div>
 
-          {renderMobileNavButton(navItems[2])}
-          {renderMobileNavButton(navItems[3])}
+          {renderMobileNavButton(mobileNavItems[2])}
+          {renderMobileNavButton(mobileNavItems[3])}
         </div>
       </nav>
     </>

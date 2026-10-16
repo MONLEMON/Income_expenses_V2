@@ -9,11 +9,13 @@ import {
   X,
   Search,
   Calendar,
+  CalendarDays,
+  LayoutDashboard,
   Inbox,
   TrendingUp
 } from 'lucide-react';
 import { Select, Spin, Progress } from 'antd';
-import Sidebar from '@/components/layouts/Sidebar';
+import Sidebar, { type NavViewType } from '@/components/layouts/Sidebar';
 import Header from '@/components/layouts/Header';
 import KPICard from './KPICard';
 import AddTransactionModal from '../transactions/AddTransactionModal';
@@ -23,6 +25,7 @@ import TransactionsTable from '../transactions/TransactionsTable';
 import CategorySummaryView from './CategorySummaryView'; // Monthly summary view
 import BudgetGoalsView from './BudgetGoalsView'; // Planning budgets and goals
 import AnalyticsView from './AnalyticsView';
+import CalendarCashflowView from './CalendarCashflowView';
 
 // Hooks
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
@@ -55,7 +58,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FinanceDashboard: React.FC = () => {
   const { language, t } = useTranslation();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'summary' | 'planning' | 'analytics'>('dashboard');
+  const [currentView, setCurrentView] = useState<NavViewType>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Dynamic Month & Year Filters (Defaults to Current Month - May "05" and Year "2026")
@@ -319,66 +322,102 @@ const FinanceDashboard: React.FC = () => {
           title={
             currentView === 'dashboard' 
               ? t.dashboard 
-              : currentView === 'summary' 
-                ? t.expenseSummary 
-                : currentView === 'planning'
-                  ? (language === 'en' ? 'Budgets & Goals' : 'แผนงบประมาณและเงินออม')
-                  : (language === 'en' ? 'Financial Analytics' : 'วิเคราะห์การเงิน')
+              : currentView === 'calendar'
+                ? (language === 'en' ? 'Daily Cashflow Calendar' : 'ปฏิทินกระแสเงินสดรายวัน')
+                : currentView === 'summary' 
+                  ? t.expenseSummary 
+                  : currentView === 'planning'
+                    ? (language === 'en' ? 'Budgets & Goals' : 'แผนงบประมาณและเงินออม')
+                    : (language === 'en' ? 'Financial Analytics' : 'วิเคราะห์การเงิน')
           }
           subTitle={
             currentView === 'dashboard' 
               ? t.welcomeTitle 
-              : currentView === 'summary' 
-                ? t.welcomeSubtitle 
-                : currentView === 'planning'
-                  ? (language === 'en' ? 'Track target saving goals and set limits' : 'จำกัดรายจ่ายและบันทึกสะสมเงินออมเพื่อการลงทุน')
-                  : (language === 'en' ? 'Analyze financial cash flows and track business margins' : 'วิเคราะห์ภาพรวมกระแสเงินสดและสัดส่วนของกิจการ')
+              : currentView === 'calendar'
+                ? (language === 'en' ? 'Inspect daily inflows, outflows, and transactions by date' : 'ตรวจสอบยอดรายรับ-รายจ่าย และรายการธุรกรรมแยกรายวัน')
+                : currentView === 'summary' 
+                  ? t.welcomeSubtitle 
+                  : currentView === 'planning'
+                    ? (language === 'en' ? 'Track target saving goals and set limits' : 'จำกัดรายจ่ายและบันทึกสะสมเงินออมเพื่อการลงทุน')
+                    : (language === 'en' ? 'Analyze financial cash flows and track business margins' : 'วิเคราะห์ภาพรวมกระแสเงินสดและสัดส่วนของกิจการ')
           }
         />
 
         {/* --- DYNAMIC REPORT PERIOD FILTER BAR --- */}
-        {(currentView === 'dashboard' || currentView === 'summary' || currentView === 'planning') && (
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 md:mb-8 bg-white/90 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm animate-fadeIn">
-            <div className="flex items-center gap-1.5 pl-1 shrink-0 text-slate-400">
-              <Calendar size={15} className="text-emerald-600 shrink-0" />
-              <span className="hidden xs:inline text-[11px] sm:text-xs font-black uppercase tracking-wider">{t.reportPeriod}:</span>
-            </div>
-          
-            {/* Month Selector */}
-            <Select 
-              value={selectedMonth}
-              onChange={(val) => setSelectedMonth(val)}
-              className="font-bold text-xs hover:border-emerald-200 min-w-[110px] sm:min-w-[140px] flex-1 sm:flex-initial"
-              style={{ height: '38px' }}
-              options={[
-                { value: 'ALL', label: t.allMonths },
-                { value: '01', label: t.january },
-                { value: '02', label: t.february },
-                { value: '03', label: t.march },
-                { value: '04', label: t.april },
-                { value: '05', label: t.may },
-                { value: '06', label: t.june },
-                { value: '07', label: t.july },
-                { value: '08', label: t.august },
-                { value: '09', label: t.september },
-                { value: '10', label: t.october },
-                { value: '11', label: t.november },
-                { value: '12', label: t.december }
-              ]}
-            />
+        {(currentView === 'dashboard' || currentView === 'calendar' || currentView === 'summary' || currentView === 'planning') && (
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4 md:mb-8 bg-white/90 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm animate-fadeIn">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-[230px]">
+              <div className="flex items-center gap-1.5 pl-1 shrink-0 text-slate-400">
+                <Calendar size={15} className="text-emerald-600 shrink-0" />
+                <span className="hidden xs:inline text-[11px] sm:text-xs font-black uppercase tracking-wider">{t.reportPeriod}:</span>
+              </div>
+            
+              {/* Month Selector */}
+              <Select 
+                value={selectedMonth}
+                onChange={(val) => setSelectedMonth(val)}
+                className="font-bold text-xs hover:border-emerald-200 min-w-[105px] sm:min-w-[140px] flex-1 sm:flex-initial"
+                style={{ height: '38px' }}
+                options={[
+                  { value: 'ALL', label: t.allMonths },
+                  { value: '01', label: t.january },
+                  { value: '02', label: t.february },
+                  { value: '03', label: t.march },
+                  { value: '04', label: t.april },
+                  { value: '05', label: t.may },
+                  { value: '06', label: t.june },
+                  { value: '07', label: t.july },
+                  { value: '08', label: t.august },
+                  { value: '09', label: t.september },
+                  { value: '10', label: t.october },
+                  { value: '11', label: t.november },
+                  { value: '12', label: t.december }
+                ]}
+              />
 
-            {/* Year Selector */}
-            <Select 
-              value={selectedYear}
-              onChange={(val) => setSelectedYear(val)}
-              className="font-bold text-xs hover:border-emerald-200 w-[92px] sm:min-w-[95px] shrink-0"
-              style={{ height: '38px' }}
-              options={[
-                { value: '2026', label: '2026' },
-                { value: '2025', label: '2025' },
-                { value: '2024', label: '2024' }
-              ]}
-            />
+              {/* Year Selector */}
+              <Select 
+                value={selectedYear}
+                onChange={(val) => setSelectedYear(val)}
+                className="font-bold text-xs hover:border-emerald-200 w-[88px] sm:min-w-[95px] shrink-0"
+                style={{ height: '38px' }}
+                options={[
+                  { value: '2026', label: '2026' },
+                  { value: '2025', label: '2025' },
+                  { value: '2024', label: '2024' }
+                ]}
+              />
+            </div>
+
+            {/* Quick View Switcher (Overview vs Daily Calendar) */}
+            {(currentView === 'dashboard' || currentView === 'calendar') && (
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setCurrentView('dashboard')}
+                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
+                    currentView === 'dashboard'
+                      ? 'bg-white text-emerald-700 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <LayoutDashboard size={14} />
+                  <span>{language === 'en' ? 'Overview' : 'ภาพรวม'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentView('calendar')}
+                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-black transition-all cursor-pointer ${
+                    currentView === 'calendar'
+                      ? 'bg-white text-emerald-700 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <CalendarDays size={14} />
+                  <span>{language === 'en' ? 'Daily Calendar' : 'ปฏิทินรายวัน'}</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -546,6 +585,16 @@ const FinanceDashboard: React.FC = () => {
             {/* Recent Transactions List */}
             <TransactionsTable transactions={filteredTransactions} />
           </div>
+        ) : currentView === 'calendar' ? (
+          /* DAILY CASHFLOW CALENDAR VIEW */
+          <CalendarCashflowView
+            transactions={transactionsList || []}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onMonthChange={setSelectedMonth}
+            onYearChange={setSelectedYear}
+            onAddTransaction={() => setIsModalOpen(true)}
+          />
         ) : currentView === 'summary' ? (
           /* MONTHLY EXPENSE SUMMARY GRID */
           <CategorySummaryView 
