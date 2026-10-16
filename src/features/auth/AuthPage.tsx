@@ -11,7 +11,7 @@ const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const loginStore = useAuthStore((state) => state.login);
-  const { language } = useTranslation();
+  const { language, setLanguage } = useTranslation();
   const [form] = Form.useForm();
 
   const handleFinish = async (values: any) => {
@@ -80,29 +80,39 @@ const AuthPage: React.FC = () => {
 
   return (
     <ConfigProvider theme={appTheme}>
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans py-8 px-4 sm:px-6">
+
+        {/* Floating Language Switcher */}
+        <button
+          type="button"
+          onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+          className="fixed top-4 right-4 z-20 px-3 py-2 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl text-slate-700 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm font-black text-xs cursor-pointer select-none active:scale-95"
+        >
+          <span>{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
+          <span>{language === 'en' ? 'EN' : 'TH'}</span>
+        </button>
 
         {/* Modern background blur shapes for ambient lighting effect */}
-        <div className="absolute w-[400px] h-[400px] rounded-full bg-emerald-300/30 blur-[100px] -top-20 -left-20 animate-pulse duration-5000"></div>
-        <div className="absolute w-[350px] h-[350px] rounded-full bg-emerald-500/10 blur-[80px] -bottom-20 -right-20 animate-pulse duration-7000"></div>
+        <div className="absolute w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] rounded-full bg-emerald-300/30 blur-[100px] -top-20 -left-20 animate-pulse duration-5000"></div>
+        <div className="absolute w-[250px] sm:w-[350px] h-[250px] sm:h-[350px] rounded-full bg-emerald-500/10 blur-[80px] -bottom-20 -right-20 animate-pulse duration-7000"></div>
 
-        <div className="w-full max-w-md px-6 z-10">
+        <div className="w-full max-w-md z-10">
           {/* Logo brand */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl flex items-center justify-center text-white font-extrabold text-3xl shadow-lg shadow-emerald-200 mb-3 transform hover:rotate-3 transition-transform">
+          <div className="flex flex-col items-center mb-6 sm:mb-8">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl sm:text-3xl shadow-lg shadow-emerald-200 mb-3 transform hover:rotate-3 transition-transform">
               F
             </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-none">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight leading-none">
               {language === 'en' ? 'POS Financials' : 'ระบบการเงิน POS'}
             </h1>
-            <p className="text-xs text-slate-500 font-bold mt-2 font-sans tracking-wide">
+            <p className="text-[11px] sm:text-xs text-slate-500 font-bold mt-2 font-sans tracking-wide">
               {language === 'en' ? 'MINT & EMERALD PREMIUM EDITION' : 'เวอร์ชันพรีเมียมสีมินต์และมรกต'}
             </p>
           </div>
 
-          <Card className="shadow-xl shadow-slate-100 border border-slate-100/80 bg-white/90 backdrop-blur-md rounded-3xl p-3">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-extrabold text-slate-800">
+          <Card className="shadow-xl shadow-slate-100 border border-slate-100/80 bg-white/90 backdrop-blur-md rounded-3xl p-1 sm:p-3">
+            <div className="text-center mb-5 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-extrabold text-slate-800">
                 {isLogin
                   ? (language === 'en' ? 'Log In' : 'เข้าสู่ระบบ')
                   : (language === 'en' ? 'Register Account' : 'สมัครสมาชิก')}

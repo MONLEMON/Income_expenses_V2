@@ -10,6 +10,7 @@ interface KPICardProps {
   color: string; // Used for icon background badge
   amountClassName?: string;
   isDarkTheme?: boolean;
+  className?: string;
 }
 
 const KPICard: React.FC<KPICardProps> = ({ 
@@ -19,38 +20,44 @@ const KPICard: React.FC<KPICardProps> = ({
   isPositive, 
   icon: Icon, 
   color,
-  amountClassName = "text-gray-800",
-  isDarkTheme = false
+  amountClassName = "text-slate-900",
+  isDarkTheme = false,
+  className = ""
 }) => (
-  <div className={`p-6 rounded-2xl shadow-sm border transition-all duration-300 relative overflow-hidden group ${
+  <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border transition-all duration-300 relative overflow-hidden group ${
     isDarkTheme 
       ? 'bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 border-emerald-800/80 hover:shadow-xl hover:shadow-emerald-900/20 hover:border-emerald-600/60' 
-      : 'bg-white/80 backdrop-blur-md border-slate-100/80 hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-200/60'
-  }`}>
-    {/* Light reflection blur mesh */}
-    <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-all duration-500 group-hover:scale-150 ${
-      isDarkTheme ? 'bg-emerald-500/10' : 'bg-emerald-100/30'
+      : 'bg-white/90 backdrop-blur-md border-slate-100/90 hover:shadow-xl hover:shadow-emerald-500/5 hover:border-emerald-200/60'
+  } ${className}`}>
+    {/* Ambient Glow */}
+    <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-all duration-500 group-hover:scale-150 ${
+      isDarkTheme ? 'bg-emerald-500/15' : 'bg-emerald-100/40'
     }`} />
 
-    <div className="flex justify-between items-start mb-4 relative z-10">
-      <div className={`p-3 rounded-xl shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 ${color}`}>
-        <Icon size={24} className="text-white" />
+    <div className="flex justify-between items-start mb-2.5 sm:mb-3 md:mb-4 relative z-10">
+      <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-300 ${color}`}>
+        <Icon className="text-white w-4 h-4 sm:w-6 sm:h-6" />
       </div>
       {trend !== undefined && (
-        <div className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+        <div className={`flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-black ${
           isDarkTheme
-            ? 'bg-emerald-500/20 text-emerald-300'
+            ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/30'
             : isPositive 
-              ? 'bg-emerald-50 text-emerald-600' 
-              : 'bg-rose-50 text-rose-600'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+              : 'bg-rose-50 text-rose-600 border border-rose-100'
         }`}>
-          {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+          {isPositive ? <ArrowUpRight size={11} className="sm:w-3.5 sm:h-3.5" /> : <ArrowDownRight size={11} className="sm:w-3.5 sm:h-3.5" />}
           <span>{trend}%</span>
         </div>
       )}
     </div>
-    <h3 className={`text-sm font-medium mb-1 relative z-10 ${isDarkTheme ? 'text-emerald-200/80' : 'text-slate-500'}`}>{title}</h3>
-    <p className={`text-2xl font-bold tracking-tight relative z-10 ${isDarkTheme ? 'text-white' : amountClassName}`}>
+
+    <h3 className={`text-[11px] sm:text-sm font-bold tracking-tight mb-0.5 sm:mb-1 relative z-10 truncate ${isDarkTheme ? 'text-emerald-200/90' : 'text-slate-500'}`}>
+      {title}
+    </h3>
+    <p className={`font-black tracking-tight relative z-10 font-sans truncate ${
+      isDarkTheme ? 'text-2xl sm:text-2xl text-white' : `text-base sm:text-2xl ${amountClassName}`
+    }`}>
       ฿{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
     </p>
   </div>

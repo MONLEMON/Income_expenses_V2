@@ -30,3 +30,13 @@ export function verifyAuth(request: Request): DecodedUser | null {
     return null;
   }
 }
+
+export function unauthorizedResponse(message = "Unauthorized: Session expired or invalid") {
+  return new Response(JSON.stringify({ error: message, code: "UNAUTHORIZED" }), {
+    status: 401,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
+  });
+}

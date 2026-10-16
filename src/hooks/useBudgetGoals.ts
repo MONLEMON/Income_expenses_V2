@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from './useAuthStore';
+import { fetchWithAuth } from '@/lib/apiClient';
 
 export interface Budget {
   budgetId: number;
@@ -24,14 +25,7 @@ export const useBudgets = (month: string, year: string) => {
   return useQuery<Budget[]>({
     queryKey: ['budgets', userId, month, year],
     queryFn: async () => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch(`/api/budgets?month=${month}&year=${year}`, {
-        headers,
-      });
+      const res = await fetchWithAuth(`/api/budgets?month=${month}&year=${year}`);
       if (!res.ok) {
         throw new Error('Failed to fetch budgets');
       }
@@ -45,16 +39,11 @@ export const useSaveBudget = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { category: string; amount: number; month: string; year: string }) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch('/api/budgets', {
+      const res = await fetchWithAuth('/api/budgets', {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
@@ -73,14 +62,8 @@ export const useDeleteBudget = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (budgetId: number) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch(`/api/budgets?id=${budgetId}`, {
+      const res = await fetchWithAuth(`/api/budgets?id=${budgetId}`, {
         method: 'DELETE',
-        headers,
       });
       if (!res.ok) {
         throw new Error('Failed to delete budget');
@@ -98,14 +81,7 @@ export const useSavingsGoals = () => {
   return useQuery<SavingsGoal[]>({
     queryKey: ['savings-goals', userId],
     queryFn: async () => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch('/api/savings-goals', {
-        headers,
-      });
+      const res = await fetchWithAuth('/api/savings-goals');
       if (!res.ok) {
         throw new Error('Failed to fetch savings goals');
       }
@@ -119,16 +95,11 @@ export const useSaveSavingsGoal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { name: string; targetAmount: number; currentAmount?: number; targetDate?: string | null }) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch('/api/savings-goals', {
+      const res = await fetchWithAuth('/api/savings-goals', {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
@@ -147,16 +118,11 @@ export const useAddContributionToGoal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { goalId: number; amountToAdd: number }) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch('/api/savings-goals', {
+      const res = await fetchWithAuth('/api/savings-goals', {
         method: 'PUT',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
@@ -175,14 +141,8 @@ export const useDeleteSavingsGoal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (goalId: number) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch(`/api/savings-goals?id=${goalId}`, {
+      const res = await fetchWithAuth(`/api/savings-goals?id=${goalId}`, {
         method: 'DELETE',
-        headers,
       });
       if (!res.ok) {
         throw new Error('Failed to delete savings goal');

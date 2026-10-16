@@ -1,21 +1,50 @@
 'use client';
 
 import React, { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { ConfigProvider, App } from 'antd';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { useAuthStore } from '@/hooks/useAuthStore';
+import { ApiError } from '@/lib/apiClient';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
-    () =>
-      new QueryClient({
+    () => {
+      const handleAuthError = (error: unknown) => {
+        if (
+          (error as ApiError)?.status === 401 ||
+          (error as Error)?.message?.includes('Unauthorized') ||
+          (error as Error)?.message?.includes('Session expired')
+        ) {
+          useAuthStore.getState().logout();
+        }
+      };
+
+      return new QueryClient({
+        queryCache: new QueryCache({
+          onError: handleAuthError,
+        }),
+        mutationCache: new MutationCache({
+          onError: handleAuthError,
+        }),
         defaultOptions: {
           queries: {
             staleTime: 60 * 1000,
             refetchOnWindowFocus: false,
+            retry: (failureCount, error) => {
+              if (
+                (error as ApiError)?.status === 401 ||
+                (error as Error)?.message?.includes('Unauthorized') ||
+                (error as Error)?.message?.includes('Session expired')
+              ) {
+                return false;
+              }
+              return failureCount < 2;
+            },
           },
         },
-      })
+      });
+    }
   );
 
   return (

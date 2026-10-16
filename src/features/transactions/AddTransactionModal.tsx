@@ -127,6 +127,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
       destroyOnHidden
       forceRender
       width={480}
+      style={{ maxWidth: 'calc(100vw - 24px)', top: 20 }}
       className="premium-antd-modal"
       title={
         <div>
@@ -175,14 +176,16 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
               placeholder="0.00"
               min={0.01}
               precision={2}
+              inputMode="decimal"
               style={{ height: '46px', display: 'flex', alignItems: 'center' }}
             />
           </Form.Item>
 
-          {/* Category & Date in a 2-column layout */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Category & Date in a responsive 1-col (mobile) / 2-col (desktop) layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
             <Form.Item
               name="category"
+              className="mb-0"
               label={<span className="font-extrabold !text-slate-700 uppercase tracking-wider text-[11px]">{t.formCategory}</span>}
               rules={[{ required: true, message: language === 'en' ? 'Please select or type a category' : 'กรุณาเลือกหรือกรอกหมวดหมู่' }]}
             >
@@ -244,6 +247,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
 
             <Form.Item
               name="date"
+              className="mb-0"
               label={<span className="font-extrabold !text-slate-700 uppercase tracking-wider text-[11px]">{t.formDate}</span>}
               rules={[{ required: true, message: language === 'en' ? 'Please select a date' : 'กรุณาเลือกวันที่ทำรายการ' }]}
             >
@@ -289,7 +293,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                   size="large"
                   placeholder={
                     isIncome
-                      ? (language === 'en' ? "e.g. POS Sales Deposit (Optional)" : "เช่น รายได้การขายหน้าน้าน (ระบุหรือไม่ก็ได้)")
+                      ? (language === 'en' ? "e.g. POS Sales Deposit (Optional)" : "เช่น รายได้การขายหน้าร้าน (ระบุหรือไม่ก็ได้)")
                       : (language === 'en' ? "e.g. Starbucks Coffee, Office Rent" : "เช่น ค่ากาแฟสตาร์บัคส์, ค่าเช่าร้าน")
                   }
                   className="font-bold !text-slate-900"
@@ -313,17 +317,17 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
           </Form.Item>
 
           {/* Action button triggers */}
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-6">
+          <div className="pt-4 flex justify-end gap-2.5 sm:gap-3 border-t border-slate-100 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl font-bold !text-slate-600 hover:bg-slate-100 transition-colors text-sm border border-slate-200 hover:border-slate-300 cursor-pointer"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-bold !text-slate-600 hover:bg-slate-100 transition-colors text-sm border border-slate-200 hover:border-slate-300 cursor-pointer"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className={`px-6 py-2.5 rounded-xl font-extrabold text-white transition-all text-sm cursor-pointer ${submitButtonClass}`}
+              className={`flex-1 sm:flex-initial px-6 py-2.5 rounded-xl font-extrabold text-white transition-all text-sm cursor-pointer ${submitButtonClass}`}
             >
               {t.addTransactionBtn}
             </button>

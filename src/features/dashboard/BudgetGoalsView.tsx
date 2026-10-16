@@ -198,18 +198,18 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn text-slate-800">
+    <div className="space-y-5 sm:space-y-8 animate-fadeIn text-slate-800">
       
       {/* Page header introduction banner */}
-      <div className="bg-gradient-to-r from-emerald-800 to-emerald-950 p-6 md:p-8 rounded-3xl text-white shadow-md border border-emerald-900 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fadeIn">
+      <div className="bg-gradient-to-r from-emerald-800 to-emerald-950 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl text-white shadow-md border border-emerald-900 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 animate-fadeIn">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-300">
             {language === 'en' ? 'Financial Planning' : 'การวางแผนการเงินเชิงรุก'}
           </span>
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-1">
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold tracking-tight mt-0.5 sm:mt-1">
             {language === 'en' ? 'Budgets & Savings Goals' : 'ระบบงบประมาณและเงินออมเป้าหมาย'}
           </h2>
-          <p className="text-sm text-emerald-200/80 mt-1 font-medium font-sans">
+          <p className="text-xs sm:text-sm text-emerald-200/80 mt-1 font-medium font-sans">
             {language === 'en' 
               ? 'Limit category expenditures and accumulate capital for targeted investments'
               : 'จำกัดค่าใช้จ่ายรายเดือนแยกตามหมวดหมู่ และสะสมเงินเพื่อลงทุนจัดหาอุปกรณ์จำเป็น'}
@@ -217,34 +217,34 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         
         {/* ================= BUDGETS CONTAINER ================= */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-all duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Coins className="text-emerald-600" size={20} />
-                {language === 'en' ? 'Category Spending Limits' : 'งบประมาณจำกัดรายจ่ายประจำเดือน'}
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-all duration-300">
+          <div className="flex justify-between items-start sm:items-center gap-2 mb-5 sm:mb-6">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <Coins className="text-emerald-600 shrink-0" size={20} />
+                <span className="truncate">{language === 'en' ? 'Category Spending Limits' : 'งบประมาณจำกัดรายจ่าย'}</span>
               </h3>
-              <p className="text-xs text-slate-400 font-bold tracking-wide uppercase mt-1">
+              <p className="text-[11px] sm:text-xs text-slate-400 font-bold tracking-wide uppercase mt-0.5 truncate">
                 {language === 'en' ? 'Limit spent per category' : 'จำกัดรายจ่ายแยกตามหมวดหมู่สินค้า'}
               </p>
             </div>
             <button 
               onClick={() => setIsBudgetModalOpen(true)}
-              className="bg-emerald-50 text-emerald-700 font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-emerald-100 transition-colors flex items-center gap-1 border border-emerald-100 cursor-pointer"
+              className="bg-emerald-50 text-emerald-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-emerald-100 active:scale-95 transition-all flex items-center gap-1 border border-emerald-100 cursor-pointer shrink-0"
             >
               <Plus size={14} />
               <span>{language === 'en' ? 'Set Budget' : 'ตั้งงบประมาณ'}</span>
             </button>
           </div>
 
-          <div className="space-y-6 flex-1 overflow-y-auto max-h-[480px] pr-2">
+          <div className="space-y-3.5 sm:space-y-5 flex-1 overflow-y-auto max-h-[480px] pr-1">
             {isBudgetsLoading ? (
               <div className="text-center py-12 text-slate-400 font-bold">Loading...</div>
             ) : budgetProgressList.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 font-sans font-medium border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 bg-slate-50/50">
+              <div className="text-center py-10 sm:py-12 px-4 text-xs sm:text-sm text-slate-400 font-sans font-medium border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 bg-slate-50/50">
                 <AlertCircle className="text-slate-300" size={28} />
                 <span>{language === 'en' ? 'No budgets configured for this month.' : 'ยังไม่ได้ตั้งค่าจำกัดงบประมาณประจำเดือนนี้'}</span>
               </div>
@@ -255,17 +255,18 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                   : (t[b.category as keyof typeof t] || b.category);
 
                 return (
-                  <div key={b.budgetId} className="p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-emerald-100 transition-all group relative">
+                  <div key={b.budgetId} className="p-3.5 sm:p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-emerald-100 transition-all group relative">
                     <button 
                       onClick={() => handleDeleteBudget(b.budgetId, b.category)}
-                      className="absolute top-4 right-4 text-slate-300 hover:text-rose-600 transition-colors cursor-pointer"
+                      className="absolute top-2.5 right-2.5 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      aria-label="Delete budget"
                     >
                       <Trash2 size={16} />
                     </button>
-                    <div className="flex justify-between items-baseline mb-2">
-                      <span className="font-extrabold text-sm text-slate-800">{displayCat}</span>
-                      <div className="text-right pr-6">
-                        <span className="text-xs text-slate-500 font-semibold font-sans block">
+                    <div className="flex justify-between items-baseline mb-2 gap-2">
+                      <span className="font-extrabold text-xs sm:text-sm text-slate-800 truncate">{displayCat}</span>
+                      <div className="text-right pr-7 shrink-0">
+                        <span className="text-[11px] sm:text-xs text-slate-500 font-semibold font-sans block">
                           {language === 'en' ? 'Spent: ' : 'จ่ายแล้ว: '}
                           <strong className="text-slate-800 font-bold">฿{b.spent.toLocaleString()}</strong>
                           {` / ฿${b.limit.toLocaleString()}`}
@@ -293,31 +294,31 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
         </div>
 
         {/* ================= SAVINGS GOALS CONTAINER ================= */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-all duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <PiggyBank className="text-emerald-600" size={20} />
-                {language === 'en' ? 'Capital Savings Goals' : 'เป้าหมายการสะสมทุนและเงินออม'}
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-all duration-300">
+          <div className="flex justify-between items-start sm:items-center gap-2 mb-5 sm:mb-6">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <PiggyBank className="text-emerald-600 shrink-0" size={20} />
+                <span className="truncate">{language === 'en' ? 'Capital Savings Goals' : 'เป้าหมายการสะสมทุนและเงินออม'}</span>
               </h3>
-              <p className="text-xs text-slate-400 font-bold tracking-wide uppercase mt-1">
+              <p className="text-[11px] sm:text-xs text-slate-400 font-bold tracking-wide uppercase mt-0.5 truncate">
                 {language === 'en' ? 'Accumulate capital for targets' : 'บันทึกเงินออมเพื่อการลงทุนส่วนตัว/ร้านค้า'}
               </p>
             </div>
             <button 
               onClick={() => setIsGoalModalOpen(true)}
-              className="bg-emerald-50 text-emerald-700 font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-emerald-100 transition-colors flex items-center gap-1 border border-emerald-100 cursor-pointer"
+              className="bg-emerald-50 text-emerald-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-emerald-100 active:scale-95 transition-all flex items-center gap-1 border border-emerald-100 cursor-pointer shrink-0"
             >
               <Plus size={14} />
               <span>{language === 'en' ? 'Create Goal' : 'สร้างเป้าหมาย'}</span>
             </button>
           </div>
 
-          <div className="space-y-6 flex-1 overflow-y-auto max-h-[480px] pr-2">
+          <div className="space-y-4 sm:space-y-6 flex-1 overflow-y-auto max-h-[480px] pr-1">
             {isGoalsLoading ? (
               <div className="text-center py-12 text-slate-400 font-bold">Loading...</div>
             ) : goalsList.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 font-sans font-medium border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 bg-slate-50/50">
+              <div className="text-center py-10 sm:py-12 px-4 text-xs sm:text-sm text-slate-400 font-sans font-medium border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 bg-slate-50/50">
                 <Target className="text-slate-300" size={28} />
                 <span>{language === 'en' ? 'No savings goals set yet.' : 'ยังไม่มีการสร้างเป้าหมายเก็บเงินออม'}</span>
               </div>
@@ -328,17 +329,18 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                 const percent = Math.min(100, (current / target) * 100);
 
                 return (
-                  <div key={g.goalId} className="p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:border-emerald-100 transition-all group relative">
+                  <div key={g.goalId} className="p-4 sm:p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:border-emerald-100 transition-all group relative">
                     <button 
                       onClick={() => handleDeleteGoal(g.goalId, g.name)}
-                      className="absolute top-4 right-4 text-slate-300 hover:text-rose-600 transition-colors cursor-pointer"
+                      className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      aria-label="Delete savings goal"
                     >
                       <Trash2 size={16} />
                     </button>
 
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="font-extrabold text-base text-slate-800">{g.name}</span>
-                      <span className="text-xs text-slate-400 font-bold pr-6">
+                    <div className="flex justify-between items-baseline mb-1 gap-2">
+                      <span className="font-extrabold text-sm sm:text-base text-slate-800 truncate">{g.name}</span>
+                      <span className="text-[11px] sm:text-xs text-slate-400 font-bold pr-7 shrink-0">
                         {g.targetDate ? `📅 ${dayjs(g.targetDate).format('DD/MM/YYYY')}` : ''}
                       </span>
                     </div>
@@ -369,9 +371,9 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                           setSelectedGoalId(g.goalId);
                           setIsContributionModalOpen(true);
                         }}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 shadow-sm"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                       >
-                        <PlusCircle size={14} />
+                        <PlusCircle size={15} />
                         <span>{language === 'en' ? 'Add Savings' : 'บันทึกเงินออมสะสม'}</span>
                       </button>
                     </div>
@@ -396,6 +398,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
         footer={null}
         destroyOnHidden
         width={400}
+        style={{ maxWidth: 'calc(100vw - 20px)', top: 20 }}
         className="premium-antd-modal"
         title={
           <div>
@@ -410,7 +413,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
           </div>
         }
       >
-        <Form form={form} layout="vertical" onFinish={handleSaveBudget} className="mt-6 space-y-4">
+        <Form form={form} layout="vertical" onFinish={handleSaveBudget} className="mt-5 sm:mt-6 space-y-4">
           <Form.Item
             name="category"
             label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{t.formCategory}</span>}
@@ -438,21 +441,22 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
               placeholder="0.00"
               min={1}
               precision={2}
+              inputMode="decimal"
               style={{ height: '46px', display: 'flex', alignItems: 'center' }}
             />
           </Form.Item>
 
-          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 mt-6">
+          <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100 mt-6">
             <button
               type="button"
               onClick={() => setIsBudgetModalOpen(false)}
-              className="px-4 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
             >
               {language === 'en' ? 'Save' : 'บันทึก'}
             </button>
@@ -470,6 +474,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
         footer={null}
         destroyOnHidden
         width={420}
+        style={{ maxWidth: 'calc(100vw - 20px)', top: 20 }}
         className="premium-antd-modal"
         title={
           <div>
@@ -482,7 +487,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
           </div>
         }
       >
-        <Form form={goalForm} layout="vertical" onFinish={handleSaveGoal} className="mt-6 space-y-4">
+        <Form form={goalForm} layout="vertical" onFinish={handleSaveGoal} className="mt-5 sm:mt-6 space-y-4">
           <Form.Item
             name="name"
             label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Goal Name' : 'ชื่อเป้าหมาย'}</span>}
@@ -492,13 +497,15 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
               placeholder={language === 'en' ? 'e.g. New POS Printer' : 'เช่น เครื่องสแกนบาร์โค้ด'} 
               size="large"
               className="font-bold text-slate-800 rounded-xl"
+              style={{ height: '46px' }}
             />
           </Form.Item>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
             <Form.Item
               name="targetAmount"
-              label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Target (฿)' : 'จำนวนเป้าหมาย'}</span>}
+              className="mb-0"
+              label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Target (฿)' : 'จำนวนเป้าหมาย (฿)'}</span>}
               rules={[{ required: true, message: 'Please enter target amount' }]}
             >
               <InputNumber
@@ -507,13 +514,15 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                 placeholder="0.00"
                 min={1}
                 precision={2}
+                inputMode="decimal"
                 style={{ height: '46px', display: 'flex', alignItems: 'center' }}
               />
             </Form.Item>
 
             <Form.Item
               name="currentAmount"
-              label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Initial Saved (฿)' : 'เงินตั้งต้นสะสม'}</span>}
+              className="mb-0"
+              label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Initial Saved (฿)' : 'เงินตั้งต้นสะสม (฿)'}</span>}
             >
               <InputNumber
                 className="w-full font-bold text-slate-800 rounded-xl"
@@ -521,6 +530,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
                 placeholder="0.00"
                 min={0}
                 precision={2}
+                inputMode="decimal"
                 style={{ height: '46px', display: 'flex', alignItems: 'center' }}
               />
             </Form.Item>
@@ -539,17 +549,17 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
             />
           </Form.Item>
 
-          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 mt-6">
+          <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100 mt-6">
             <button
               type="button"
               onClick={() => setIsGoalModalOpen(false)}
-              className="px-4 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
             >
               {language === 'en' ? 'Create' : 'สร้าง'}
             </button>
@@ -568,6 +578,7 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
         footer={null}
         destroyOnHidden
         width={350}
+        style={{ maxWidth: 'calc(100vw - 20px)', top: 20 }}
         className="premium-antd-modal"
         title={
           <div>
@@ -580,10 +591,10 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
           </div>
         }
       >
-        <Form form={contributionForm} layout="vertical" onFinish={handleAddContribution} className="mt-6 space-y-4">
+        <Form form={contributionForm} layout="vertical" onFinish={handleAddContribution} className="mt-5 sm:mt-6 space-y-4">
           <Form.Item
             name="amountToAdd"
-            label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Amount (฿)' : 'จำนวนเงินที่ออมเพิ่ม'}</span>}
+            label={<span className="font-extrabold text-[10px] text-slate-500 uppercase tracking-wider">{language === 'en' ? 'Amount (฿)' : 'จำนวนเงินที่ออมเพิ่ม (฿)'}</span>}
             rules={[{ required: true, message: 'Please enter amount' }]}
           >
             <InputNumber
@@ -592,25 +603,26 @@ const BudgetGoalsView: React.FC<BudgetGoalsViewProps> = ({
               placeholder="0.00"
               min={0.01}
               precision={2}
+              inputMode="decimal"
               style={{ height: '46px', display: 'flex', alignItems: 'center' }}
               autoFocus
             />
           </Form.Item>
 
-          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 mt-6">
+          <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100 mt-6">
             <button
               type="button"
               onClick={() => {
                 setIsContributionModalOpen(false);
                 setSelectedGoalId(null);
               }}
-              className="px-4 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 text-xs border border-slate-200 cursor-pointer"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
+              className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 text-xs cursor-pointer shadow-sm"
             >
               {language === 'en' ? 'Save' : 'บันทึกการออม'}
             </button>

@@ -1,10 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/providers";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#10b981",
+};
 
 export const metadata: Metadata = {
   title: "POS Income & Expense Tracker",
   description: "Unified premium portal for managing income and expenses with transaction ledger analysis",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "POS Financials",
+  },
 };
 
 export default function RootLayout({

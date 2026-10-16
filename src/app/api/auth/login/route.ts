@@ -60,26 +60,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
     }
 
-    // 3. Generate JWT token (compatible with HS256)
+    // 3. Generate JWT token (30 days validity for seamless user experience)
     const payload = {
       userId: user.userId,
       username: user.username,
       fullName: user.fullName,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" });
 
-    // 4. Return token and user info
-    return NextResponse.json({
-      success: true,
-      token,
-      user: {
-        userId: user.userId,
-        username: user.username,
-        fullName: user.fullName,
+    // 4. Return token and user info with cache-busting headers
+    return NextResponse.json(
+      {
+        success: true,
+        token,
+        user: {
+          userId: user.userId,
+          username: user.username,
+          fullName: user.fullName,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

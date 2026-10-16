@@ -7,12 +7,77 @@
 body {
   font-family: var(--sans);
   background-color: #f8fafc;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Safe area support for mobile devices */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+}
+
+/* Hide scrollbars on horizontal swipeable pill bars on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Modern Keyframe Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideLeft {
+  animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom scrollbar styling for premium feel */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -30,10 +95,35 @@ body {
 
 /* Override Antd classes where required for emerald green themes */
 .ant-btn-primary {
-  box-shadow: 0 4px 6px -1px rgb(16 185 129 / 0.2), 0 2px 4px -2px rgb(16 185 129 / 0.2) !important;
+  box-shadow: 0 4px 10px -1px rgb(16 185 129 / 0.25), 0 2px 4px -2px rgb(16 185 129 / 0.2) !important;
 }
 
 .ant-modal-content {
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05) !important;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15) !important;
   border: 1px solid #f1f5f9;
+  border-radius: 24px !important;
 }
+
+/* Mobile-specific modal & input optimizations */
+@media (max-width: 640px) {
+  .ant-modal {
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+    padding-bottom: 0 !important;
+  }
+  .ant-modal-content {
+    padding: 18px 16px !important;
+    border-radius: 22px !important;
+  }
+  /* Prevent iOS Safari auto-zoom on form inputs */
+  input, select, textarea, .ant-input, .ant-input-number-input, .ant-select-selection-search-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Ant Design Table Mobile Responsiveness */
+.ant-table-wrapper {
+  overflow-x: auto;
+}
+
+

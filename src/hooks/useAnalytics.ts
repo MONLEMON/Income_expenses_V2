@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from './useAuthStore';
+import { fetchWithAuth } from '@/lib/apiClient';
 
 export interface DailyTrend {
   date: string;
@@ -54,13 +55,7 @@ export const useAnalytics = (startDate: string, endDate: string) => {
       queryParams.append('startDate', startDate);
       queryParams.append('endDate', endDate);
 
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`/api/reports/analytics?${queryParams.toString()}`, { headers });
+      const res = await fetchWithAuth(`/api/reports/analytics?${queryParams.toString()}`);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to fetch financial analytics');

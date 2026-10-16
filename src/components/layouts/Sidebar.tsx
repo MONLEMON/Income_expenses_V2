@@ -1,99 +1,154 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, FolderOpen, LogOut, Target, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, LogOut, Target, BarChart3, Plus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useLanguageStore';
 import { useAuthStore } from '@/hooks/useAuthStore';
 
 interface SidebarProps {
   currentView?: 'dashboard' | 'summary' | 'planning' | 'analytics';
   onViewChange?: (view: 'dashboard' | 'summary' | 'planning' | 'analytics') => void;
+  onAddTransaction?: () => void;
 }
 
-const SidebarIcon = ({ 
-  icon, 
-  active = false,
-  onClick,
-  tooltip
-}: { 
-  icon: React.ReactNode; 
-  active?: boolean;
-  onClick?: () => void;
-  tooltip: string;
-}) => (
-  <div 
-    onClick={onClick}
-    title={tooltip}
-    className={`relative group flex items-center justify-center w-12 h-12 md:w-full md:aspect-square rounded-2xl cursor-pointer transition-all duration-300 ${
-      active 
-        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200' 
-        : 'text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
-    }`}
-  >
-    {icon}
-    {/* Modern CSS Tooltip (Hidden on mobile) */}
-    <div className="absolute hidden md:block left-24 scale-0 group-hover:scale-100 transition-all duration-200 origin-left bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-md whitespace-nowrap z-50 pointer-events-none">
-      {tooltip}
-    </div>
-  </div>
-);
+const navItems: Array<{
+  id: 'dashboard' | 'summary' | 'planning' | 'analytics';
+  icon: React.ElementType;
+  labelEn: string;
+  labelTh: string;
+}> = [
+  { id: 'dashboard', icon: LayoutDashboard, labelEn: 'Dashboard', labelTh: 'ภาพรวม' },
+  { id: 'summary', icon: FolderOpen, labelEn: 'Summary', labelTh: 'หมวดหมู่' },
+  { id: 'planning', icon: Target, labelEn: 'Planning', labelTh: 'แผนงบ/ออม' },
+  { id: 'analytics', icon: BarChart3, labelEn: 'Analytics', labelTh: 'วิเคราะห์' },
+];
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChange }) => {
-  const { language, t } = useTranslation();
+const Sidebar: React.FC<SidebarProps> = ({ currentView = 'dashboard', onViewChange, onAddTransaction }) => {
+  const { language } = useTranslation();
   const logout = useAuthStore((state) => state.logout);
 
-  return (
-    <aside className="fixed bottom-0 left-0 right-0 top-auto h-16 w-full md:top-0 md:bottom-auto md:h-full md:w-24 bg-white border-t border-gray-100 md:border-t-0 md:border-r flex flex-row md:flex-col items-center justify-between md:justify-start py-0 px-6 md:py-8 md:px-0 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)] md:shadow-[4px_0_24px_rgba(0,0,0,0.02)] animate-fadeIn">
-      {/* Brand Logo (Visible on desktop only) */}
-      <div 
-        className="hidden md:flex w-12 h-12 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl items-center justify-center text-white font-bold text-2xl mb-12 shadow-lg shadow-emerald-200 cursor-pointer hover:rotate-3 transition-transform"
-        onClick={() => onViewChange?.('dashboard')}
-        title="POS System"
+  const renderMobileNavButton = (item: typeof navItems[number]) => {
+    const Icon = item.icon;
+    const isActive = currentView === item.id;
+    const label = language === 'en' ? item.labelEn : item.labelTh;
+
+    return (
+      <button
+        key={item.id}
+        onClick={() => onViewChange?.(item.id)}
+        className={`flex flex-col items-center justify-center h-full py-1 transition-all duration-150 relative cursor-pointer active:scale-90 select-none ${
+          isActive ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'
+        }`}
       >
-        F
-      </div>
-      
-      {/* Usable Nav Menus Only */}
-      <nav className="flex flex-row md:flex-col space-x-6 md:space-x-0 md:space-y-5 px-0 md:px-6 h-full md:h-auto items-center md:items-stretch justify-start flex-1 md:flex-initial md:w-full">
-        <SidebarIcon 
-          icon={<LayoutDashboard size={22} />} 
-          active={currentView === 'dashboard'} 
-          onClick={() => onViewChange?.('dashboard')}
-          tooltip={t.dashboard}
-        />
-        <SidebarIcon 
-          icon={<FolderOpen size={22} />} 
-          active={currentView === 'summary'} 
-          onClick={() => onViewChange?.('summary')}
-          tooltip={t.expenseSummary}
-        />
-        <SidebarIcon 
-          icon={<Target size={22} />} 
-          active={currentView === 'planning'} 
-          onClick={() => onViewChange?.('planning')}
-          tooltip={language === 'en' ? 'Budgets & Goals' : 'งบประมาณและเป้าหมาย'}
-        />
-        <SidebarIcon 
-          icon={<BarChart3 size={22} />} 
-          active={currentView === 'analytics'} 
-          onClick={() => onViewChange?.('analytics')}
-          tooltip={language === 'en' ? 'Financial Analytics' : 'วิเคราะห์การเงิน'}
-        />
-      </nav>
-      
-      {/* Usable Logout Button */}
-      <div className="pb-0 md:pb-6 w-auto md:w-full px-0 md:px-6 flex flex-row md:flex-col items-center space-x-4 md:space-x-0 md:space-y-4">
-        <SidebarIcon 
-          icon={<LogOut size={22} />} 
-          onClick={logout}
-          tooltip={language === 'en' ? 'Log Out' : 'ออกจากระบบ'}
-        />
-        <div className="hidden md:block text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none">
-          POS v1
+        {/* Active Pill Glow Indicator */}
+        <div 
+          className={`flex items-center justify-center w-10 h-7 rounded-full transition-all duration-200 ${
+            isActive ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' : 'text-slate-400'
+          }`}
+        >
+          <Icon size={20} className={isActive ? 'scale-105' : ''} />
         </div>
-      </div>
-    </aside>
+        <span className={`text-[10px] font-extrabold tracking-tight mt-0.5 truncate max-w-[64px] ${isActive ? 'text-emerald-700' : 'text-slate-500'}`}>
+          {label}
+        </span>
+
+        {/* Tiny Active Dot under text */}
+        {isActive && (
+          <span className="absolute bottom-1 w-1 h-1 bg-emerald-600 rounded-full animate-fadeIn" />
+        )}
+      </button>
+    );
+  };
+
+  return (
+    <>
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <aside className="hidden md:flex fixed top-0 left-0 bottom-0 w-24 bg-white border-r border-slate-100 flex-col items-center justify-between py-8 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] animate-fadeIn">
+        {/* Brand Logo */}
+        <div 
+          className="w-12 h-12 bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-200 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+          onClick={() => onViewChange?.('dashboard')}
+          title="POS Financials"
+        >
+          F
+        </div>
+        
+        {/* Desktop Nav Icons */}
+        <nav className="flex flex-col space-y-4 px-3 w-full">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            const label = language === 'en' ? item.labelEn : item.labelTh;
+
+            return (
+              <div 
+                key={item.id}
+                onClick={() => onViewChange?.(item.id)}
+                title={label}
+                className={`relative group flex flex-col items-center justify-center w-full aspect-square rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+                  isActive 
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200' 
+                    : 'text-slate-400 hover:bg-emerald-50/80 hover:text-emerald-700'
+                }`}
+              >
+                <Icon size={22} className="transition-transform group-hover:scale-110" />
+                
+                {/* Modern Tooltip on Hover */}
+                <div className="absolute left-24 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                  {label}
+                </div>
+              </div>
+            );
+          })}
+        </nav>
+        
+        {/* Desktop Logout Button */}
+        <div className="w-full px-3 flex flex-col items-center space-y-3">
+          <div 
+            onClick={logout}
+            title={language === 'en' ? 'Log Out' : 'ออกจากระบบ'}
+            className="group flex items-center justify-center w-full aspect-square rounded-2xl cursor-pointer text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
+          >
+            <LogOut size={22} className="transition-transform group-hover:scale-110" />
+          </div>
+          <div className="text-[10px] font-extrabold text-slate-300 uppercase tracking-wider select-none">
+            v2.0
+          </div>
+        </div>
+      </aside>
+
+      {/* ================= MOBILE BOTTOM NAVIGATION DOCK ================= */}
+      <nav 
+        aria-label="Mobile Bottom Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] pb-safe print:hidden"
+      >
+        <div className="grid grid-cols-5 h-16 max-w-lg mx-auto items-center px-1.5">
+          {renderMobileNavButton(navItems[0])}
+          {renderMobileNavButton(navItems[1])}
+
+          {/* Center Quick-Add Transaction Action Button */}
+          <div className="flex flex-col items-center justify-center h-full relative">
+            <button
+              type="button"
+              onClick={onAddTransaction}
+              aria-label={language === 'en' ? 'Add Transaction' : 'เพิ่มรายการใหม่'}
+              className="w-12 h-12 -mt-5 bg-gradient-to-tr from-emerald-700 via-emerald-600 to-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-500/35 border-4 border-white flex items-center justify-center active:scale-90 transition-all cursor-pointer select-none"
+            >
+              <Plus size={24} strokeWidth={2.75} />
+            </button>
+            <span className="text-[10px] font-black text-emerald-700 tracking-tight mt-0.5 select-none">
+              {language === 'en' ? 'Add' : 'เพิ่มรายการ'}
+            </span>
+          </div>
+
+          {renderMobileNavButton(navItems[2])}
+          {renderMobileNavButton(navItems[3])}
+        </div>
+      </nav>
+    </>
   );
 };
 
 export default Sidebar;
+
+

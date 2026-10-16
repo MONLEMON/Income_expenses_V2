@@ -204,18 +204,18 @@ const AnalyticsView: React.FC = () => {
   const { dailyTrends = [], kpis, comparison, breakdowns } = data!;
 
   return (
-    <div className="space-y-8 animate-fadeIn text-slate-800">
+    <div className="space-y-5 sm:space-y-8 animate-fadeIn text-slate-800">
       
       {/* --- 1. FILTER CONTROLS BAR (Hidden during prints) --- */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm print:hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm print:hidden">
         
-        {/* Preset Selectors */}
-        <div className="flex flex-wrap gap-2">
+        {/* Preset Selectors: Horizontally swipeable on mobile */}
+        <div className="flex items-center overflow-x-auto no-scrollbar gap-1.5 sm:gap-2 pb-0.5 sm:pb-0 sm:flex-wrap">
           {(['thisMonth', 'lastMonth', 'last90Days', 'thisYear', 'custom'] as DatePreset[]).map((p) => (
             <button
               key={p}
               onClick={() => setPreset(p)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none ${
                 preset === p
                   ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-200'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
@@ -227,22 +227,22 @@ const AnalyticsView: React.FC = () => {
         </div>
 
         {/* Custom Range Picker & Export Tools */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {preset === 'custom' && (
-            <div className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-              <Calendar size={14} className="text-slate-400" />
+            <div className="flex items-center justify-between w-full sm:w-auto gap-1.5 sm:gap-2 bg-slate-50 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-100">
+              <Calendar size={14} className="text-slate-400 shrink-0" />
               <input
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-700 outline-none border-none cursor-pointer text-slate-700"
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none border-none cursor-pointer min-w-0 flex-1"
               />
-              <span className="text-[10px] font-bold text-slate-400 font-sans">to</span>
+              <span className="text-[10px] font-bold text-slate-400 font-sans shrink-0">to</span>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-700 outline-none border-none cursor-pointer text-slate-700"
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none border-none cursor-pointer min-w-0 flex-1"
               />
             </div>
           )}
@@ -251,18 +251,18 @@ const AnalyticsView: React.FC = () => {
           <button
             onClick={handleExportCSV}
             disabled={isExporting}
-            className="flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 bg-slate-50 hover:bg-slate-100 active:scale-95 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-bold px-3 sm:px-4 py-2 rounded-xl transition-all cursor-pointer disabled:opacity-50"
             title={t.exportCsv}
           >
-            <Download size={15} />
+            <Download size={14} />
             <span>{language === 'en' ? 'CSV' : 'ส่งออก CSV'}</span>
           </button>
           <button
             onClick={handlePrint}
-            className="flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 bg-slate-50 hover:bg-slate-100 active:scale-95 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-bold px-3 sm:px-4 py-2 rounded-xl transition-all cursor-pointer"
             title={t.printReport}
           >
-            <Printer size={15} />
+            <Printer size={14} />
             <span>{language === 'en' ? 'Print' : 'พิมพ์รายงาน'}</span>
           </button>
         </div>
@@ -276,65 +276,65 @@ const AnalyticsView: React.FC = () => {
         </p>
       </div>
 
-      {/* --- 2. STATS KPI GRID PANEL --- */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* --- 2. STATS KPI GRID PANEL (2x2 on mobile, 4-col on desktop) --- */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
         
         {/* KPI 1: Inflows */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t.monthlyIncome}</span>
-            <span className="text-lg font-extrabold text-emerald-600 mt-1 block">฿{kpis.totalIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block truncate">{t.monthlyIncome}</span>
+            <span className="text-base sm:text-lg font-extrabold text-emerald-600 mt-1 block truncate">฿{kpis.totalIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
           </div>
-          <div className="flex justify-between items-baseline mt-3 border-t border-slate-50 pt-2 print:border-none">
+          <div className="flex justify-between items-baseline gap-1 mt-2.5 sm:mt-3 border-t border-slate-50 pt-2 print:border-none">
             <span className="text-[9px] text-slate-400 font-semibold truncate font-sans">{t.comparePriorPeriod}</span>
             {renderVariance(comparison.incomeChange)}
           </div>
         </div>
 
         {/* KPI 2: Outflows */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t.monthlyExpenses}</span>
-            <span className="text-lg font-extrabold text-rose-500 mt-1 block">฿{kpis.totalExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block truncate">{t.monthlyExpenses}</span>
+            <span className="text-base sm:text-lg font-extrabold text-rose-500 mt-1 block truncate">฿{kpis.totalExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
           </div>
-          <div className="flex justify-between items-baseline mt-3 border-t border-slate-50 pt-2 print:border-none">
+          <div className="flex justify-between items-baseline gap-1 mt-2.5 sm:mt-3 border-t border-slate-50 pt-2 print:border-none">
             <span className="text-[9px] text-slate-400 font-semibold truncate font-sans">{t.comparePriorPeriod}</span>
             {renderVariance(comparison.expenseChange, true)}
           </div>
         </div>
 
         {/* KPI 3: Net Profit */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t.totalBalance}</span>
-            <span className={`text-lg font-extrabold mt-1 block ${kpis.netProfit >= 0 ? 'text-slate-800' : 'text-rose-500'}`}>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block truncate">{t.totalBalance}</span>
+            <span className={`text-base sm:text-lg font-extrabold mt-1 block truncate ${kpis.netProfit >= 0 ? 'text-slate-800' : 'text-rose-500'}`}>
               ฿{kpis.netProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </span>
           </div>
-          <div className="flex justify-between items-baseline mt-3 border-t border-slate-50 pt-2 print:border-none">
+          <div className="flex justify-between items-baseline gap-1 mt-2.5 sm:mt-3 border-t border-slate-50 pt-2 print:border-none">
             <span className="text-[9px] text-slate-400 font-semibold truncate font-sans">{t.comparePriorPeriod}</span>
             {renderVariance(comparison.profitChange)}
           </div>
         </div>
 
         {/* KPI 4: Profit Margin */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between print:border-none print:shadow-none print:p-0">
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t.netProfitMargin}</span>
-            <span className={`text-lg font-extrabold mt-1 block ${kpis.profitMargin >= 15 ? 'text-emerald-600' : (kpis.profitMargin >= 0 ? 'text-amber-500' : 'text-rose-500')}`}>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block truncate">{t.netProfitMargin}</span>
+            <span className={`text-base sm:text-lg font-extrabold mt-1 block truncate ${kpis.profitMargin >= 15 ? 'text-emerald-600' : (kpis.profitMargin >= 0 ? 'text-amber-500' : 'text-rose-500')}`}>
               {kpis.profitMargin.toFixed(1)}%
             </span>
           </div>
-          <div className="flex justify-between items-baseline mt-3 border-t border-slate-50 pt-2 print:border-none text-[9px] text-slate-400 font-bold font-sans">
-            <span>{language === 'en' ? 'Daily Avg Inflow:' : 'เฉลี่ยรับรายวัน:'}</span>
-            <span className="text-slate-700">฿{kpis.dailyAvgIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <div className="flex justify-between items-baseline gap-1 mt-2.5 sm:mt-3 border-t border-slate-50 pt-2 print:border-none text-[9px] text-slate-400 font-bold font-sans">
+            <span className="truncate">{language === 'en' ? 'Daily Avg:' : 'เฉลี่ย/วัน:'}</span>
+            <span className="text-slate-700 shrink-0">฿{kpis.dailyAvgIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
           </div>
         </div>
 
       </div>
 
       {/* --- 3. TREND AREA CHART --- */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
         <div className="flex items-center space-x-2 mb-6">
           <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 print:hidden">
             <TrendingUp size={16} />
@@ -342,7 +342,7 @@ const AnalyticsView: React.FC = () => {
           <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">{t.financialTrends}</h3>
         </div>
 
-        <div className="h-[320px] w-full">
+        <div className="h-[250px] sm:h-[320px] w-full">
           {mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dailyTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -397,10 +397,10 @@ const AnalyticsView: React.FC = () => {
       </div>
 
       {/* --- 4. DOUBLE BREAKDOWN CHARTS (Side-by-side or stacked on mobile) --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         
         {/* Outflow Breakdown by Category */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
           <div className="flex items-center space-x-2 mb-6">
             <div className="p-2 bg-rose-50 rounded-lg text-rose-500 print:hidden">
               <TrendingDown size={16} />
@@ -414,7 +414,7 @@ const AnalyticsView: React.FC = () => {
               <span className="text-xs font-bold text-slate-400">{t.noExpenseRecords}</span>
             </div>
           ) : (
-            <div className="h-[280px]">
+            <div className="h-[240px] sm:h-[280px]">
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={breakdowns.expenses} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
@@ -444,7 +444,7 @@ const AnalyticsView: React.FC = () => {
         </div>
 
         {/* Inflow Breakdown by Payment Method */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm print:border-none print:shadow-none print:p-0">
           <div className="flex items-center space-x-2 mb-6">
             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 print:hidden">
               <PieChart size={16} />
@@ -458,7 +458,7 @@ const AnalyticsView: React.FC = () => {
               <span className="text-xs font-bold text-slate-400">{language === 'en' ? 'No Income Records Found' : 'ไม่พบข้อมูลรายรับ'}</span>
             </div>
           ) : (
-            <div className="h-[280px]">
+            <div className="h-[240px] sm:h-[280px]">
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={breakdowns.income} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from './useAuthStore';
+import { fetchWithAuth } from '@/lib/apiClient';
 
 export interface Transaction {
   id: string;
@@ -26,15 +27,7 @@ export const useTransactions = (month?: string, year?: string) => {
       if (month) queryParams.append('month', month);
       if (year) queryParams.append('year', year);
 
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`/api/transactions?${queryParams.toString()}`, {
-        headers
-      });
+      const res = await fetchWithAuth(`/api/transactions?${queryParams.toString()}`);
       if (!res.ok) {
         throw new Error('Failed to fetch recent transactions');
       }
@@ -52,15 +45,7 @@ export const useCategoriesDescriptions = () => {
   return useQuery<{ expenses: Record<string, string[]>; income: Record<string, string[]> }>({
     queryKey: ['categories-descriptions'],
     queryFn: async () => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('/api/transactions/categories-descriptions', {
-        headers
-      });
+      const res = await fetchWithAuth('/api/transactions/categories-descriptions');
       if (!res.ok) {
         throw new Error('Failed to fetch transaction categories metadata');
       }
@@ -85,17 +70,11 @@ export const useAddTransaction = () => {
       amount: number;
       date: string;
     }) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('/api/transactions', {
+      const res = await fetchWithAuth('/api/transactions', {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(newTx),
       });
 
@@ -129,17 +108,11 @@ export const useUpdateTransaction = () => {
       amount: number;
       date: string;
     }) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('/api/transactions', {
+      const res = await fetchWithAuth('/api/transactions', {
         method: 'PUT',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updatedTx),
       });
 
@@ -167,15 +140,8 @@ export const useDeleteTransaction = () => {
   
   return useMutation({
     mutationFn: async (transactionId: string) => {
-      const token = useAuthStore.getState().token;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`/api/transactions?id=${transactionId}`, {
+      const res = await fetchWithAuth(`/api/transactions?id=${transactionId}`, {
         method: 'DELETE',
-        headers,
       });
 
       if (!res.ok) {

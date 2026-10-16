@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from './useAuthStore';
+import { fetchWithAuth } from '@/lib/apiClient';
 
 export interface MonthlySummaryItem {
   month: string;
@@ -28,14 +29,8 @@ const fetchMonthlySummary = async (year?: string): Promise<MonthlySummaryRespons
   const url = year 
     ? `/api/reports/monthly-summary?year=${year}`
     : '/api/reports/monthly-summary';
-    
-  const token = useAuthStore.getState().token;
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
-  const response = await fetch(url, { headers });
+  const response = await fetchWithAuth(url);
   
   if (!response.ok) {
     throw new Error('Network response was not ok');
